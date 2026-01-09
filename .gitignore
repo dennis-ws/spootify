@@ -1,3 +1,19 @@
+# Expo local state and caches
+.expo/             # runtime state (Metro bundler, dev-client data, tunnels)
+.expo-shared/      # shared project settings (app.json edits, etc.)
+
+# Metro bundler caches/logs
+*.expo             # generic Expo temp files
+*.tunnel           # Expo DevTools tunnels
+*.cache            # Metro cache folder
+*.tmp              # temp files created during bundling
+*.log              # build or Metro logs
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
 # Logs
 logs
 *.log
