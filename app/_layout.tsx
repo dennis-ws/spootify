@@ -1,3 +1,5 @@
+import { View } from '@/components/ui/view';
+import { Text } from '@/components/ui/text';
 import { ThemeProvider } from '@/theme/theme-provider';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';

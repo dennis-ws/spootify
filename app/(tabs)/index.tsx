@@ -6,17 +6,27 @@ import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/view';
 import { useColor } from '@/hooks/useColor';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { BookOpen, Stars, Terminal } from 'lucide-react-native';
-import { Dimensions, StyleSheet } from 'react-native';
-
+import { BookOpen, Stars, Search, Ellipsis } from 'lucide-react-native';
+import { Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
+import { createPlaylistTable, insertPlaylist, getPlaylists } from '@/lib/schema';
+import { useEffect, useState } from 'react';
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  const bottom = useBottomTabBarHeight();
+  const [playlists, setPlaylists] = useState<any[]>([]);
 
-  const cardColor = useColor('card');
-  const borderColor = useColor('border');
-  const primaryColor = useColor('primary');
+  const bottom = useBottomTabBarHeight();
+  useEffect(() => {
+    async function testDB() {
+      console.log("Hello World!");
+      const playlists = await getPlaylists();
+      console.log("Playlists:", playlists);
+      setPlaylists(playlists);
+    }
+
+    testDB();
+  }, []);
+
 
   return (
     <ScrollView
@@ -27,73 +37,29 @@ export default function HomeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <Text variant='heading'>BNA UI</Text>
+          <Text variant='heading'>Playlist</Text>
 
           <ModeToggle />
         </View>
-      </View>
 
-      {/* Hero Section */}
-      <View style={styles.heroSection}>
-        <Text variant='heading' style={styles.heroTitle}>
-          Welcome to BNA UI
-        </Text>
-        <Text variant='subtitle' style={styles.heroSubtitle}>
-          A beautiful, modern component library for Expo, React Native apps
-        </Text>
-        <Text variant='caption' style={styles.heroDescription}>
-          Build stunning mobile applications with our carefully crafted
-          components.
-        </Text>
-      </View>
+        {/* Search and Setting buttons */}
+        <View style={styles.headerButtons}>
+          <Button icon={Search} variant='secondary' onPress={() => {}}></Button>
 
-      {/* Action Buttons */}
-      <View style={styles.actionButtons}>
-        <Link asChild href='/explore'>
-          <Button size='lg' icon={Stars}>
-            Explore Components
-          </Button>
-        </Link>
-        <Link asChild href='https://ui.ahmedbna.com'>
-          <Button variant='success' size='lg' icon={BookOpen}>
-            Documentation
-          </Button>
-        </Link>
-      </View>
-
-      {/* Getting Started */}
-      <View style={styles.gettingStartedSection}>
-        <Text variant='title' style={{ textAlign: 'center', marginBottom: 20 }}>
-          Getting Started
-        </Text>
-        <View
-          style={[
-            styles.gettingStartedCard,
-            { backgroundColor: cardColor, borderColor },
-          ]}
-        >
-          <View style={styles.terminalHeader}>
-            <Terminal size={20} color={primaryColor} />
-            <Text variant='body' style={styles.terminalTitle}>
-              Add Components
-            </Text>
-          </View>
-          <View style={styles.codeBlock}>
-            <Text variant='caption' style={styles.bashCommand}>
-              npx bna-ui add avatar
-            </Text>
-          </View>
-          <Text variant='caption' style={styles.installDescription}>
-            Add components to your project with a single command
-          </Text>
+          <Button icon={Ellipsis} variant='secondary' onPress={() => {}}></Button>
         </View>
       </View>
 
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Text variant='caption' style={styles.footerText}>
-          Built with ❤️ for Expo, React Native developers by BNA
-        </Text>
+
+      {/* Playlist Section */}
+      <View style={styles.playlistSection}>
+        {/* Playlist Item */}
+        {playlists.map((playlist) => (
+          <TouchableOpacity key={playlist.id} style={styles.playlistContent}>
+            <Text>{playlist.name}</Text>
+            <Text>{playlist.description}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
     </ScrollView>
   );
@@ -107,12 +73,39 @@ const styles = StyleSheet.create({
     paddingTop: 64,
     paddingHorizontal: 20,
     paddingBottom: 20,
+    gap: 10,
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 10
+  },
+  playlistSection: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: 'red',
+  },
+  playlistContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    backgroundColor: 'lightgray',
+    padding: 10,
+    borderRadius: 8,
+  },
+
+
+
+
   heroSection: {
     paddingHorizontal: 20,
     paddingVertical: 40,
