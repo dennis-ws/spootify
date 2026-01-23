@@ -10,6 +10,9 @@ import { BookOpen, Stars, Search, Ellipsis } from 'lucide-react-native';
 import { Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
 import { createPlaylistTable, insertPlaylist, getPlaylists } from '@/lib/schema';
 import { useEffect, useState } from 'react';
+import AppLayout from '../applayout';
+import { Image } from '@/components/ui/image';
+
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
@@ -55,9 +58,17 @@ export default function HomeScreen() {
       <View style={styles.playlistSection}>
         {/* Playlist Item */}
         {playlists.map((playlist) => (
-          <TouchableOpacity key={playlist.id} style={styles.playlistContent}>
-            <Text>{playlist.name}</Text>
-            <Text>{playlist.description}</Text>
+          <TouchableOpacity key={playlist.id}>
+            <View style={styles.playlistContent}>
+              <Image
+                source={require('@/assets/images/icon.png')}
+                contentFit='cover'
+                width={80}
+                height={80}
+                style={{flex: 1}}
+              />
+              <Text style={{flex: 2}}>{playlist.name}</Text>
+            </View>
           </TouchableOpacity>
         ))}
       </View>
@@ -89,18 +100,19 @@ const styles = StyleSheet.create({
   playlistSection: {
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
     backgroundColor: 'red',
+    gap: 10
   },
   playlistContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-    backgroundColor: 'lightgray',
-    padding: 10,
+    justifyContent: 'center',
+    backgroundColor: 'blue',
     borderRadius: 8,
+    width: '80%',
+    height: 100,
+    gap: 20,
+    padding: 10
   },
 
 
