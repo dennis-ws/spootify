@@ -105,6 +105,33 @@ export async function getPlaylistSongs(playlistId: number): Promise<PlaylistSong
     return results;
 }
 
+interface PlaylistSong {
+    id: number
+    title: string
+    position: number | null
+    file: string
+}
+
+export async function getSongsFromPlaylist(playlistId: number): Promise<PlaylistSong[]> {
+    const db = await getDB();
+
+    const results = await db.getAllAsync<PlaylistSong>(`
+        SELECT 
+            s.id,
+            s.title,
+            s.file,
+            p.position
+        FROM PLAYLIST_SONGS p
+        INNER JOIN SONGS s
+            ON s.id = p.song_id
+        WHERE p.playlist_id = ?
+        ORDER BY p.position ASC
+    `, [playlistId]);
+
+    return results;
+}
+
+
 interface Song {
     id: number;
     title: string;
@@ -123,9 +150,9 @@ export async function createSongTable() {
     `);
 }
 
-export async function getSongTable() {
+export async function getSongTable(): Promise<Song[]> {
     const db = await getDB();
-    const results = await db.getAllAsync(`SELECT * FROM SONGS`);
+    const results = await db.getAllAsync<Song>(`SELECT * FROM SONGS`);
     return results;
 }
 
