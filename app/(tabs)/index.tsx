@@ -21,6 +21,9 @@ import PlaylistMenu from '../playlistMenu'
 import { useAudioContext, setAudioMode } from '@/lib/audioSound';
 import { createTwoButtonAlert } from '@/components/ui/alert';
 
+import { PlaylistCard } from '@/components/PlaylistCard'
+import { Header } from '@/components/Header'
+
 
 const { width } = Dimensions.get('window');
 
@@ -159,20 +162,10 @@ export default function HomeScreen() {
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text variant='heading'>Playlist</Text>
-
-          <ModeToggle />
-        </View>
-
-        {/* Search and Setting buttons */}
-        <View style={styles.headerButtons}>
-          <Button icon={Search} variant='secondary' onPress={() => {}}></Button>
-
-          <Button icon={Ellipsis} variant='secondary' onPress={open}></Button>
-        </View>
-      </View>
+      <Header
+        leftPress={() => {}}
+        rightPress={open}
+      />
 
       {selectionMode && (
         <View style={{ padding: 16 }}>
@@ -196,42 +189,26 @@ export default function HomeScreen() {
         </View>
       )}
 
-
-
-
       {/* Playlist Section */}
       <View style={styles.playlistSection}>
-        {/* Playlist Item */}
         {playlists.map((playlist) => {
-          const isSelected = selectedIds.has(playlist.id);
-
-          return (
-            <TouchableOpacity
-              key={playlist.id}
-              onPress={() =>
-                selectionMode
-                  ? toggleSelect(playlist.id)
-                  : router.navigate(`/playlist/${playlist.id}`)
-              }
-            >
-              <View
-                style={[
-                  styles.playlistContent,
-                  isSelected && { padding: 10, borderWidth: 2, borderColor: destructiveColor }
-                ]}
-              >
-                <Image
-                  source={require('@/assets/images/icon.png')}
-                  contentFit="cover"
-                  width={80}
-                  height={80}
-                />
-                <Text>{playlist.name}</Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+          const isSelected = selectedIds.has(playlist.id)
+            return (
+              <PlaylistCard
+                key={playlist.id}
+                playlist={playlist}
+                isSelected={isSelected}
+                destructiveColor={destructiveColor}
+                onPress={() =>
+                  selectionMode
+                    ? toggleSelect(playlist.id)
+                    : router.navigate(`/playlist/${playlist.id}`)
+                }
+              />
+            )
+          })}
       </View>
+
 
        {/* Play buttons */}
       <View style={styles.container}>
@@ -301,119 +278,11 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  header: {
-    paddingTop: 64,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    gap: 10,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: 10
-  },
   playlistSection: {
     flexDirection: 'column',
     alignItems: 'center',
     gap: 10
   },
-  playlistContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    borderRadius: 8,
-    height: 100,
-    gap: 20,
-  },
 
 
-
-
-  heroSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 40,
-    alignItems: 'center',
-    textAlign: 'center',
-  },
-  heroTitle: {
-    fontSize: 36,
-    fontWeight: '800',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  heroSubtitle: {
-    textAlign: 'center',
-    marginBottom: 16,
-    opacity: 0.8,
-  },
-  heroDescription: {
-    textAlign: 'center',
-    lineHeight: 24,
-    maxWidth: width - 80,
-  },
-  actionButtons: {
-    paddingHorizontal: 20,
-    gap: 12,
-    marginBottom: 40,
-  },
-  gettingStartedSection: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  gettingStartedCard: {
-    padding: 24,
-    borderRadius: 16,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  terminalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
-  },
-  terminalTitle: {
-    fontWeight: '600',
-  },
-  codeBlock: {
-    backgroundColor: '#1a1a1a',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    minWidth: '100%',
-  },
-  bashCommand: {
-    fontFamily: 'monospace',
-    // color: '#00ff00',
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  installDescription: {
-    textAlign: 'center',
-    opacity: 0.7,
-  },
-  gettingStartedText: {
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 20,
-  },
-  gettingStartedButton: {
-    alignSelf: 'center',
-  },
-  footer: {
-    paddingHorizontal: 20,
-    paddingVertical: 40,
-    alignItems: 'center',
-  },
-  footerText: {
-    textAlign: 'center',
-    fontSize: 14,
-  },
 });

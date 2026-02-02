@@ -11,15 +11,21 @@ import { createSongTable, getSongTable, insertSong, getSong } from '@/lib/schema
 import { Image } from '@/components/ui/image';
 import * as DocumentPicker from 'expo-document-picker';
 import { useAudioContext } from '@/lib/audioSound';
+import { SongCard } from '@/components/SongCard'
+import { Header } from '@/components/Header'
 
-
+interface Song {
+  id: number
+  title: string
+  file: string
+}
 
 export default function ExploreScreen() {
   const bottom = useBottomTabBarHeight();
   const audioPlayer = useAudioContext();
 
 
-  const [songs, setSongs] = useState<any[]>([]);
+  const [songs, setSongs] = useState<Song[]>([]);
 
 
   const pickMp3 = async () => {
@@ -72,35 +78,22 @@ export default function ExploreScreen() {
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text variant="heading">Songs</Text>
-          <ModeToggle />
-        </View>
-
-        <View style={styles.headerButtons}>
-          <Button icon={Search} variant="secondary" onPress={() => {}} />
-          <Button icon={Ellipsis} variant="secondary" onPress={pickMp3} />
-        </View>
-      </View>
+      <Header
+        leftPress={() => {}}
+        rightPress={pickMp3}
+      />
 
       {/* Playlist Section */}
       <View style={styles.playlistSection}>
         {songs.map((song) => (
-          <TouchableOpacity key={song.id} onPress={() => setAndPlay(song.id)}>
-            <View style={styles.playlistContent}>
-              <Image
-                source={require('@/assets/images/icon.png')}
-                contentFit="cover"
-                width={80}
-                height={80}
-                style={{ flex: 1 }}
-              />
-              <Text style={{ flex: 2 }}>{song.title}</Text>
-            </View>
-          </TouchableOpacity>
+          <SongCard
+            key={song.id}
+            song={song}
+            onPress={() => setAndPlay(song.id)}
+          />
         ))}
       </View>
+
 
       {/* Play buttons */}
       <View style={styles.container}>
@@ -121,38 +114,10 @@ const styles = StyleSheet.create({
   scrollView: { 
     flex: 1 
   },
-  header: { 
-    paddingTop: 64, 
-    paddingHorizontal: 20, 
-    paddingBottom: 20, 
-    gap: 10 
-  },
-  headerContent: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'space-between' 
-  },
-  headerButtons: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'flex-end', 
-    gap: 10 
-  },
   playlistSection: { 
     flexDirection: 'column', 
     alignItems: 'center', 
     backgroundColor: 'red', 
     gap: 10 
-  },
-  playlistContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'blue',
-    borderRadius: 8,
-    width: '80%',
-    height: 100,
-    gap: 20,
-    padding: 10,
   },
 });
