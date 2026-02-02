@@ -8,28 +8,149 @@ import { useColor } from '@/hooks/useColor';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { BookOpen, Stars, Search, Ellipsis } from 'lucide-react-native';
 import { Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
-import { createPlaylistTable, insertPlaylist, getPlaylists } from '@/lib/schema';
+import { createPlaylistTable, insertPlaylist, getPlaylists, deletePlaylist } from '@/lib/schema';
 import { useEffect, useState } from 'react';
 import AppLayout from '../applayout';
 import { Image } from '@/components/ui/image';
+import { useRouter } from 'expo-router';
+import { Input } from '@/components/ui/input'
+
+import { useBottomSheet, BottomSheet } from '@/components/ui/bottom-sheet'
+import PlaylistMenu from '../playlistMenu'
+
+import { useAudioContext, setAudioMode } from '@/lib/audioSound';
+import { createTwoButtonAlert } from '@/components/ui/alert';
+
 
 const { width } = Dimensions.get('window');
 
+const menuItems = [
+  {id: 'add', title: 'Add playlist'},
+  {id: 'delete', title: 'Delete playlists', destructive: true}
+]
+
 export default function HomeScreen() {
+
+  
+  const [playlistName, setPlaylistName] = useState<string>("My Playlist");
+  const playlistFormError = 
+    !playlistName ? 'Please give the playlist a name' : '';
+
+  const { isVisible, open, close } = useBottomSheet();
+  const [addPlaylistForm, setAddPlaylistForm] = useState(false);
+  const audioPlayer = useAudioContext();
+  const textColor = useColor('text');
+  const destructiveColor = useColor('destructive');
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
+
+  const router = useRouter();
   const [playlists, setPlaylists] = useState<any[]>([]);
 
   const bottom = useBottomTabBarHeight();
   useEffect(() => {
-    async function testDB() {
-      console.log("Hello World!");
-      const playlists = await getPlaylists();
-      console.log("Playlists:", playlists);
-      setPlaylists(playlists);
-    }
-
-    testDB();
+    loadPlaylists();
+    setAudioMode();
   }, []);
 
+  
+  async function loadPlaylists() {
+    const playlists = await getPlaylists();
+    setPlaylists(playlists);
+  }
+
+  const snapPointHeight = () => {
+    if (!addPlaylistForm) {
+      return [0.4]
+    }
+    return [0.8]
+  }
+
+  const playSong = () => {
+    audioPlayer.play();
+  };
+
+  const stopSong = () => {
+    audioPlayer.pause();
+  };
+
+  const handleMenuAction = (itemId: string) => {
+    if (itemId === 'add') {
+      showAddPlaylistForm();
+      return;
+    }
+
+    if (itemId === 'delete') {
+      setSelectionMode(true);
+      close();
+      return;
+    }
+  }
+
+  const showAddPlaylistForm = () => {
+    console.log('Bringing up the playlist form');
+    setAddPlaylistForm(true);
+    setPlaylistName("My Playlist");
+  }
+
+  const handleSubmit = () => {
+    if (playlistName) {
+      setAddPlaylistForm(false);
+      addPlaylist();
+      close();
+    }
+  }
+
+  const addPlaylist = async () => {
+    console.log('Adding new playlist');
+    await insertPlaylist(playlistName); 
+    await loadPlaylists();
+  }
+
+  const removePlaylist = async () => {
+    console.log('Removing playlist')
+    selectedIds.forEach(async (id) => await deletePlaylist(id));
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+    await loadPlaylists();
+  }
+
+  const handleClose = () => {
+    setAddPlaylistForm(false);
+    close();
+  }
+
+  const confirmDelete = () => {
+    createTwoButtonAlert({
+      title: 'Confirm Deletion',
+      message: `Delete ${selectedIds.size} playlist(s)? This cannot be undone.`,
+      buttons: [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+          onPress: () => {
+            // do nothing, dont delete anything
+          },
+        },
+        {
+          text: 'Confirm',
+          style: 'destructive',
+          onPress: removePlaylist, 
+        },
+      ],
+    });
+  };
+
+
+  const toggleSelect = (id: number) => {
+    console.log('I reached here!')
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    })
+  }
 
   return (
     <ScrollView
@@ -49,34 +170,134 @@ export default function HomeScreen() {
         <View style={styles.headerButtons}>
           <Button icon={Search} variant='secondary' onPress={() => {}}></Button>
 
-          <Button icon={Ellipsis} variant='secondary' onPress={() => {}}></Button>
+          <Button icon={Ellipsis} variant='secondary' onPress={open}></Button>
         </View>
       </View>
+
+      {selectionMode && (
+        <View style={{ padding: 16 }}>
+          <Button
+            variant="destructive"
+            onPress={confirmDelete}
+            disabled={selectedIds.size === 0}
+          >
+            Delete
+          </Button>
+
+          <Button
+            variant="secondary"
+            onPress={() => {
+              setSelectionMode(false);
+              setSelectedIds(new Set());
+            }}
+          >
+            Cancel
+          </Button>
+        </View>
+      )}
+
+
 
 
       {/* Playlist Section */}
       <View style={styles.playlistSection}>
         {/* Playlist Item */}
-        {playlists.map((playlist) => (
-          <TouchableOpacity key={playlist.id}>
-            <View style={styles.playlistContent}>
-              <Image
-                source={require('@/assets/images/icon.png')}
-                contentFit='cover'
-                width={80}
-                height={80}
-                style={{flex: 1}}
-              />
-              <Text style={{flex: 2}}>{playlist.name}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+        {playlists.map((playlist) => {
+          const isSelected = selectedIds.has(playlist.id);
+
+          return (
+            <TouchableOpacity
+              key={playlist.id}
+              onPress={() =>
+                selectionMode
+                  ? toggleSelect(playlist.id)
+                  : router.navigate(`/playlist/${playlist.id}`)
+              }
+            >
+              <View
+                style={[
+                  styles.playlistContent,
+                  isSelected && { padding: 10, borderWidth: 2, borderColor: destructiveColor }
+                ]}
+              >
+                <Image
+                  source={require('@/assets/images/icon.png')}
+                  contentFit="cover"
+                  width={80}
+                  height={80}
+                />
+                <Text>{playlist.name}</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </View>
+
+       {/* Play buttons */}
+      <View style={styles.container}>
+        <Button onPress={playSong} />
+        <Button onPress={stopSong} />
+      </View>
+      
+      {/* Bottom Sheet*/}
+      <BottomSheet
+        isVisible={isVisible}
+        onClose={handleClose}
+        snapPoints={snapPointHeight()}
+      >
+        {!addPlaylistForm && 
+        <View>
+          {menuItems.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: 16,
+              }}
+              onPress={() => handleMenuAction(item.id)}
+            >
+              <Text style={{ fontSize: 20, marginRight: 16}}>Some icon</Text>
+              <Text
+                variant='body'
+                style={{
+                  flex: 1,
+                  color: item.destructive ? destructiveColor : textColor
+                }}
+              >{item.title}</Text>
+            </TouchableOpacity>
+          ))
+          }
+        </View>}
+
+        {addPlaylistForm &&
+        <View>
+          <Input
+            label='Playlist Name'
+            placeholder={playlistName}
+            value={playlistName}
+            onChangeText={(text) => 
+              setPlaylistName(text)
+            }
+            variant='outline'
+            error={playlistFormError}
+          />
+          <Button onPress={handleSubmit}>Make Playlist</Button>
+        </View>
+        }
+        
+      </BottomSheet>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+    container: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    padding: 10, 
+    backgroundColor: 'green' 
+  },
   scrollView: {
     flex: 1,
   },
@@ -100,19 +321,15 @@ const styles = StyleSheet.create({
   playlistSection: {
     flexDirection: 'column',
     alignItems: 'center',
-    backgroundColor: 'red',
     gap: 10
   },
   playlistContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'blue',
+    justifyContent: 'flex-start',
     borderRadius: 8,
-    width: '80%',
     height: 100,
     gap: 20,
-    padding: 10
   },
 
 
