@@ -53,14 +53,19 @@ export default function HomeScreen() {
 
   const bottom = useBottomTabBarHeight();
   useEffect(() => {
-    loadPlaylists();
-    setAudioMode();
+    async function init() {
+      await createPlaylistTable();
+      await loadPlaylists();
+      setAudioMode();
+    }
+    init();
   }, []);
 
   
   async function loadPlaylists() {
     const playlists = await getPlaylists();
     setPlaylists(playlists);
+    console.log(playlists);
   }
 
   const snapPointHeight = () => {

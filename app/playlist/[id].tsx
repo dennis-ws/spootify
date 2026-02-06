@@ -3,7 +3,7 @@ import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/view';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
-import { getPlaylistSongsTable, createPlaylistSongsTable, insertPlaylistSongsTable, getSongTable, insertPlaylist, getSong, getSongsFromPlaylist } from '@/lib/schema';
+import { getPlaylistSongsTable, createPlaylistSongsTable, insertPlaylistSongsTable, getSongsFromPid, getSongTable, insertPlaylist, getSong} from '@/lib/schema';
 import { Ellipsis, Search } from 'lucide-react-native';
 import { StyleSheet } from 'react-native';
 import { Button } from '@/components/ui/button';
@@ -13,18 +13,12 @@ import { useColor } from '@/hooks/useColor'
 import { createTwoButtonAlert } from '@/components/ui/alert'
 import { Header } from '@/components/Header'
 import { PlaylistSongCard } from '@/components/PlaylistSongCard'
+import { PlaylistSongs } from '@/lib/types';
 
 const menuItems = [
   {id: 'add', title: 'Add playlist'},
   {id: 'delete', title: 'Delete playlists', destructive: true}
 ]
-
-interface PlaylistSong {
-    id: number
-    title: string
-    position: number | null
-    file: string
-}
 
 export default function Playlist() {
     const audioPlayer = useAudioContext();
@@ -40,7 +34,7 @@ export default function Playlist() {
 
 
     const [playlistSongs, setPlaylistSongs] = useState<any[]>();
-    const [songs, setSongs] = useState<PlaylistSong[]>([]);
+    const [songs, setSongs] = useState<PlaylistSongs[]>([]);
     const selected = useColor('green');
 
     const loadPlaylistSongs = async () => {
@@ -49,14 +43,18 @@ export default function Playlist() {
     }
 
     const loadSongs = async () => {
-        const table = await getSongsFromPlaylist(idNumber);
+        const table = await getSongsFromPid(idNumber);
         setSongs(table);
     }
 
     useEffect(() => {
-        createPlaylistSongsTable();
-        loadPlaylistSongs();
-        loadSongs();
+        async function init() {
+            await createPlaylistSongsTable();
+            await loadPlaylistSongs();
+            await loadSongs();
+        }
+
+        init();
     }, [])
 
     /** Set Header */
@@ -69,7 +67,7 @@ export default function Playlist() {
 
     const handleAddSong = async () => {
         await addSong();
-        loadPlaylistSongs();
+        await loadPlaylistSongs();
         closeSongs();
     }
 
@@ -117,6 +115,7 @@ export default function Playlist() {
         if (itemId === 'add') {
             setSelectionMode(false); // if it was true, just set it to false
             setAddPlaylistSong(true);
+            console.log(playlistSongs);
             return;
         }
 
