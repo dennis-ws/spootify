@@ -1,10 +1,5 @@
 import { getDB } from "./db";
-
-interface Playlist {
-    id: number,
-    name: string,
-    description: string
-}
+import { Playlist, PlaylistSongs, Song} from './types';
 
 export async function createPlaylistTable() {
     const db = await getDB();
@@ -40,14 +35,6 @@ export async function deletePlaylist(id: number) {
     )
 }
 
-interface PlaylistSongs {
-    id: number;
-    playlist_id: number
-    song_id: number;
-    position: number;
-    image?: string
-}
-
 export async function getPlaylists() {
     const db = await getDB();
 
@@ -66,10 +53,29 @@ export async function createPlaylistSongsTable() {
             song_id INTEGER,
             position INTEGER,
             image TEXT,
+            file TEXT,
             FOREIGN KEY (playlist_id) REFERENCES PLAYLISTS(id)
             FOREIGN KEY (song_id) REFERENCES SONGS(id)
         );
     `);
+}
+
+export async function getSongsFromPid(playlistId: number): Promise<PlaylistSongs[]> {
+    const db = await getDB();
+
+    const results = await db.getAllAsync<PlaylistSongs>(`
+        SELECT
+            s.id,
+            s.title,
+            s.file,
+        FROM PLAYLIST_SONGS p
+        INNER JOIN SONGS s
+            ON s.id = p.song_id
+        WHERE p.playlist_id = ?
+        ORDER BY p.position ASC
+        `, [playlistId]);
+
+    return results;
 }
 
 export async function insertPlaylistSongsTable(playlistId: number, songId: number) {
@@ -103,39 +109,6 @@ export async function getPlaylistSongs(playlistId: number): Promise<PlaylistSong
     `);
 
     return results;
-}
-
-interface PlaylistSong {
-    id: number
-    title: string
-    position: number | null
-    file: string
-}
-
-export async function getSongsFromPlaylist(playlistId: number): Promise<PlaylistSong[]> {
-    const db = await getDB();
-
-    const results = await db.getAllAsync<PlaylistSong>(`
-        SELECT 
-            s.id,
-            s.title,
-            s.file,
-            p.position
-        FROM PLAYLIST_SONGS p
-        INNER JOIN SONGS s
-            ON s.id = p.song_id
-        WHERE p.playlist_id = ?
-        ORDER BY p.position ASC
-    `, [playlistId]);
-
-    return results;
-}
-
-
-interface Song {
-    id: number;
-    title: string;
-    file: string;
 }
 
 export async function createSongTable() {
