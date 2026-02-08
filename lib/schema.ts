@@ -67,7 +67,7 @@ export async function getSongsFromPid(playlistId: number): Promise<PlaylistSongs
         SELECT
             s.id,
             s.title,
-            s.file,
+            s.file
         FROM PLAYLIST_SONGS p
         INNER JOIN SONGS s
             ON s.id = p.song_id
@@ -75,6 +75,17 @@ export async function getSongsFromPid(playlistId: number): Promise<PlaylistSongs
         ORDER BY p.position ASC
         `, [playlistId]);
 
+    return results;
+}
+
+export async function getPlaylistSongsFromSid(songId: number): Promise<PlaylistSongs[]> {
+    const db = await getDB();
+    const results = await db.getAllAsync<PlaylistSongs>(`
+        SELECT
+            p.id
+        FROM PLAYLIST_SONGS p
+        WHERE p.song_id = ?
+        `, [songId]);
     return results;
 }
 
@@ -111,6 +122,11 @@ export async function getPlaylistSongs(playlistId: number): Promise<PlaylistSong
     return results;
 }
 
+export async function deletePlaylistSongs(id: number) {
+    const db = await getDB();
+    await db.runAsync(`DELETE FROM PLAYLIST_SONGS WHERE id = ${id}`);
+}
+
 export async function createSongTable() {
     const db = await getDB();
 
@@ -118,7 +134,7 @@ export async function createSongTable() {
         CREATE TABLE IF NOT EXISTS SONGS (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
-            file TEXT NOT NULL
+            file TEXT
         );
     `);
 }
@@ -127,6 +143,11 @@ export async function getSongTable(): Promise<Song[]> {
     const db = await getDB();
     const results = await db.getAllAsync<Song>(`SELECT * FROM SONGS`);
     return results;
+}
+
+export async function deleteSong(id: number) {
+    const db = await getDB();
+    await db.runAsync(`DELETE FROM SONGS WHERE id = ${id}`);
 }
 
 export async function getSong(id: number): Promise<Song> {
@@ -142,15 +163,29 @@ export async function getSong(id: number): Promise<Song> {
     return results[0]; // this should only return the file because it comes in an array lmao
 }
 
-export async function insertSong(title: string, file: string) {
+export async function insertSong(title: string, file: string): Promise<number> {
     const db = await getDB();
-    await db.runAsync(
+    const result = await db.runAsync(
         `INSERT OR REPLACE INTO SONGS (
             title, file
         ) VALUES (?, ?)`,
         [
             title,
             file
+        ]
+    );
+    return result.lastInsertRowId as number; // return the ID of the inserted song
+}
+
+export async function updateSong(id: number, column: 'title' | 'file', toUpdate: string) {
+    const db = await getDB();
+    await db.runAsync(
+        `UPDATE SONGS
+        SET ${column} = ?
+        WHERE id = ?`,
+        [
+            toUpdate,
+            id
         ]
     );
 }
