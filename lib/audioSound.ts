@@ -14,8 +14,8 @@ export function useAudioContext() {
 
 export async function setAudioMode() {
     await setAudioModeAsync({
-        allowsRecording: false,
         playsInSilentMode: true,
-        interruptionMode: 'mixWithOthers'
+        interruptionMode: 'doNotMix',
+        shouldPlayInBackground: true,
     })
 }
