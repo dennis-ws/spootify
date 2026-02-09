@@ -8,7 +8,7 @@ import { useColor } from '@/hooks/useColor';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { BookOpen, Stars, Search, Ellipsis } from 'lucide-react-native';
 import { Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
-import { createPlaylistTable, insertPlaylist, getPlaylists, deletePlaylist } from '@/lib/schema';
+import { createPlaylistTable, insertPlaylist, getPlaylists, deletePlaylist, deletePlaylistSongs } from '@/lib/schema';
 import { useEffect, useState } from 'react';
 import AppLayout from '../applayout';
 import { Image } from '@/components/ui/image';
@@ -118,7 +118,14 @@ export default function HomeScreen() {
 
   const removePlaylist = async () => {
     console.log('Removing playlist')
-    selectedIds.forEach(async (id) => await deletePlaylist(id));
+    for (const id of selectedIds) {
+      // Delete the playlist
+      await deletePlaylist(id);
+      console.log("Deleted playlist with ID: ", id);
+      // Delete all playlist songs associated with the playlist
+      await deletePlaylistSongs(id, 'playlist_id');
+      console.log("Deleted playlist songs associated with playlist ID: ", id);
+    };
     setSelectionMode(false);
     setSelectedIds(new Set());
     await loadPlaylists();
