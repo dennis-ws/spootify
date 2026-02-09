@@ -3,7 +3,7 @@ import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/view';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
-import { getPlaylistSongsTable, createPlaylistSongsTable, insertPlaylistSongsTable, getSongsFromPid, getSongTable, insertPlaylist, getSong} from '@/lib/schema';
+import { getPlaylistSongsTable, createPlaylistSongsTable, insertPlaylistSongsTable, getSongsFromPid, getSongTable, insertPlaylist, getSong, deletePlaylistSongs} from '@/lib/schema';
 import { Ellipsis, Search } from 'lucide-react-native';
 import { StyleSheet } from 'react-native';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { useColor } from '@/hooks/useColor'
 import { createTwoButtonAlert } from '@/components/ui/alert'
 import { Header } from '@/components/Header'
 import { PlaylistSongCard } from '@/components/PlaylistSongCard'
-import { PlaylistSongs } from '@/lib/types';
+import { PlaylistSongs, Song } from '@/lib/types';
 
 const menuItems = [
   {id: 'add', title: 'Add playlist'},
@@ -33,17 +33,21 @@ export default function Playlist() {
     const textColor = useColor('text');
 
 
-    const [playlistSongs, setPlaylistSongs] = useState<any[]>();
-    const [songs, setSongs] = useState<PlaylistSongs[]>([]);
+    const [playlistSongs, setPlaylistSongs] = useState<PlaylistSongs[]>();
+    const [songs, setSongs] = useState<Song[]>([]);
     const selected = useColor('green');
 
+    const reload = async () => {
+        await loadPlaylistSongs();
+    }
+
     const loadPlaylistSongs = async () => {
-        const table = await getPlaylistSongsTable();
+        const table = await getSongsFromPid(idNumber);
         setPlaylistSongs(table);
     }
 
     const loadSongs = async () => {
-        const table = await getSongsFromPid(idNumber);
+        const table = await getSongTable();
         setSongs(table);
     }
 
@@ -115,7 +119,6 @@ export default function Playlist() {
         if (itemId === 'add') {
             setSelectionMode(false); // if it was true, just set it to false
             setAddPlaylistSong(true);
-            console.log(playlistSongs);
             return;
         }
 
@@ -124,6 +127,17 @@ export default function Playlist() {
             close();
             return;
         }
+    }
+
+    const handleDelete = async () => {
+        console.log('Deleting songs with IDS: ', Array.from(selectedIds));
+
+        for (const sid of selectedIds) {
+            await deletePlaylistSongs(sid, 'song_id');
+        }
+
+        reload();
+        setSelectedIds(new Set());
     }
 
       const confirmDelete = () => {
@@ -141,6 +155,7 @@ export default function Playlist() {
             {
               text: 'Confirm',
               style: 'destructive',
+              onPress: handleDelete 
             },
           ],
         });
@@ -182,7 +197,7 @@ export default function Playlist() {
 
                 {/* Songs */}
                 <View style={styles.songBox}>
-                    {songs?.map((psong) => {
+                    {playlistSongs?.map((psong) => {
                         const isSelected = selectedIds.has(psong.id);
                         return (
                             <PlaylistSongCard
