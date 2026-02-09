@@ -103,10 +103,10 @@ export async function insertPlaylistSongsTable(playlistId: number, songId: numbe
     );
 }
 
-export async function getPlaylistSongsTable() {
+export async function getPlaylistSongsTable(): Promise<PlaylistSongs[]> {
     const db = await getDB();
 
-    const results = await db.getAllAsync(`SELECT * FROM PLAYLIST_SONGS`);
+    const results = await db.getAllAsync<PlaylistSongs>(`SELECT * FROM PLAYLIST_SONGS`);
     
     return results;
 }
@@ -122,10 +122,23 @@ export async function getPlaylistSongs(playlistId: number): Promise<PlaylistSong
     return results;
 }
 
-export async function deletePlaylistSongs(id: number) {
-    const db = await getDB();
-    await db.runAsync(`DELETE FROM PLAYLIST_SONGS WHERE id = ${id}`);
+/**
+ * 
+ * @param id 
+ * @param column By default it will delete based on ID column, 
+ *  else you can specify to delte by playlist_id or song_id
+ */
+export async function deletePlaylistSongs(
+  id: number,
+  column: 'id' | 'playlist_id' | 'song_id' = 'id'
+) {
+  const db = await getDB();
+  await db.runAsync(
+    `DELETE FROM PLAYLIST_SONGS WHERE ${column} = ?`,
+    [id]
+  );
 }
+
 
 export async function createSongTable() {
     const db = await getDB();
