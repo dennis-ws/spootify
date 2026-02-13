@@ -50,7 +50,12 @@
           }
         }
       ],
-      "expo-audio"
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to select thumbnail images."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
