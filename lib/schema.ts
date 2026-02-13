@@ -8,7 +8,8 @@ export async function createPlaylistTable() {
         CREATE TABLE IF NOT EXISTS PLAYLISTS (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
-            description TEXT
+            description TEXT,
+            image TEXT
         );
     `);
 }
@@ -147,7 +148,8 @@ export async function createSongTable() {
         CREATE TABLE IF NOT EXISTS SONGS (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
-            file TEXT
+            file TEXT,
+            image TEXT
         );
     `);
 }
@@ -176,6 +178,16 @@ export async function getSong(id: number): Promise<Song> {
     return results[0]; // this should only return the file because it comes in an array lmao
 }
 
+export async function getSongImage(id: number): Promise<Song> {
+    const db = await getDB();
+    const results = await db.getAllAsync<Song>(`
+        SELECT image
+        FROM SONGS 
+        WHERE id = ${id}`);
+    return results[0];
+}
+
+
 export async function insertSong(title: string, file: string): Promise<number> {
     const db = await getDB();
     const result = await db.runAsync(
@@ -190,7 +202,7 @@ export async function insertSong(title: string, file: string): Promise<number> {
     return result.lastInsertRowId as number; // return the ID of the inserted song
 }
 
-export async function updateSong(id: number, column: 'title' | 'file', toUpdate: string) {
+export async function updateSong(id: number, column: 'title' | 'file' | 'image', toUpdate: string) {
     const db = await getDB();
     await db.runAsync(
         `UPDATE SONGS
