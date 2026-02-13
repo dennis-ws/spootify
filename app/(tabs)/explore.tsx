@@ -6,9 +6,13 @@ import { View } from '@/components/ui/view';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { Ellipsis, Search } from 'lucide-react-native';
 import { useState, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
-import { createSongTable, getSongTable, insertSong, getSong, updateSong, deleteSong, deletePlaylistSongs, getPlaylistSongsFromSid, createPlaylistSongsTable, getPlaylistSongs, getPlaylistSongsTable } from '@/lib/schema';
+import { StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { createSongTable, getSongTable, insertSong, getSong, updateSong, deleteSong, 
+  deletePlaylistSongs, getPlaylistSongsFromSid, 
+  createPlaylistSongsTable, getPlaylistSongs, getPlaylistSongsTable, 
+  getSongImage} from '@/lib/schema';
 import { Image } from '@/components/ui/image';
+import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { useAudioContext } from '@/lib/audioSound';
 import { SongCard } from '@/components/SongCard'
@@ -16,15 +20,20 @@ import { Header } from '@/components/Header'
 
 
 import { Directory, File, Paths} from 'expo-file-system';
-import { Song } from '@/lib/types';
+import { Song, Sheetmode} from '@/lib/types';
 import { BottomSheet, useBottomSheet } from '@/components/ui/bottom-sheet';
 import { useColor } from '@/hooks/useColor';
 import { createTwoButtonAlert } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
 
 
 const menuItems = [
   {id: 'add', title: 'Add song'},
   {id: 'delete', title: 'Delete songs', destructive: true}
+]
+const editItems = [
+  {id: 'rename', title: 'Rename song'},
+  {id: 'change_image', title: 'Change song image'}
 ]
 
 export default function ExploreScreen() {
@@ -37,6 +46,17 @@ export default function ExploreScreen() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [songs, setSongs] = useState<Song[]>([]);
+  const [editMode, setEditMode] = useState<Sheetmode>('menu');
+  const [editSongId, setEditSongId] = useState<number | null>(null);
+  const [songName, setSongName] = useState<string>('');
+  const [imageUri, setImageUri] = useState<string>('');
+  const [submitted, setSubmitted] = useState(false);
+
+  const renameError =
+    submitted && !songName.trim()
+      ? 'Please give the song a name'
+      : '';
+
   const songDirectory = new Directory(Paths.document, 'songs');
 
   async function loadSongs() {
@@ -53,7 +73,7 @@ export default function ExploreScreen() {
     init();
   }, []);
 
-    const pickMp3 = async () => {
+  const pickMp3 = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ['audio/mpeg', 'video/mp4'],
@@ -76,7 +96,10 @@ export default function ExploreScreen() {
 
       
       const destinationDirectory = new Directory(songDirectory, songId.toString()); 
-      destinationDirectory.create({overwrite: true}); // create a subdirectory for the song
+      if (!destinationDirectory.exists) {
+        destinationDirectory.create();
+      }
+
     
       const destinationFile = new File(destinationDirectory, fileName);
       const cacheFile = new File(result.assets[0].uri);
@@ -92,6 +115,64 @@ export default function ExploreScreen() {
       console.error('Error picking file:', error);
     }
   };
+
+  const pickImage = async () => {
+    if (!editSongId) return;
+
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      Alert.alert(
+        'Permission required',
+        'Permission to access media library is required.'
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (result.canceled || !result.assets?.length) return;
+
+    const destinationDirectory = new Directory(
+      songDirectory,
+      editSongId.toString()
+    );
+
+    if (!destinationDirectory.exists) {
+      destinationDirectory.create();
+    }
+
+    // delete all file ending in .jpg in the destination directory 
+    // (there should only be one, but just to be safe)
+    const existingFiles = destinationDirectory.list();
+    for (const file of existingFiles) {
+      if (file.name.endsWith('.jpg')) {
+        file.delete();
+      }
+    }
+
+    const destinationFile = new File(destinationDirectory, Date.now().toString() + '_cover.jpg');
+
+    if (destinationFile.exists) {
+      destinationFile.delete();
+    }
+
+    const cacheFile = new File(result.assets[0].uri);
+
+    // Just copy — Expo will create the file for you
+    cacheFile.copy(destinationFile);
+
+    await updateSong(editSongId, 'image', destinationFile.uri);
+    await loadSongs();
+    close();
+
+  };
+
 
   const handleMenuAction = (itemId: string) => {
     tmp();
@@ -206,6 +287,49 @@ export default function ExploreScreen() {
     })
   }
 
+  const handleEditAction = async (editId: string) => {
+    if (editId === 'rename') {
+      console.log('Renaming song with ID: ', editSongId);
+      setEditMode('rename');
+      return;
+    }
+    
+    if (editId === 'change_image') {
+      // open a document picker to select the new image for the song, then update the song in the database
+      // we will store the image in the same directory as the song file, with the name "cover.jpg"
+      try {
+        pickImage();
+      } catch (error) {
+        console.error('Error picking image file: ', error);
+      }
+    }
+    
+
+  }
+
+  const openEditMenu = (songId: number) => {
+    // open a menu with options to rename the song or change image file
+    setEditMode('edit');
+    setEditSongId(songId);
+    open();
+  }
+
+  const handleSubmit = async () => {
+    setSubmitted(true);
+
+    if (!editSongId || !songName.trim()) return;
+
+    await updateSong(editSongId, 'title', songName.trim());
+    await loadSongs();
+
+    setSubmitted(false);
+    setEditMode('menu');
+    setEditSongId(null);
+    setSongName('');
+    close();
+  };
+
+
   return (
     <ScrollView
       style={styles.scrollView}
@@ -255,6 +379,11 @@ export default function ExploreScreen() {
                 selectionMode
                   ? toggleSelect(song.id)
                   : setAndPlay(song.id)}
+              onLongPress={() => {
+                if (!selectionMode) {
+                  openEditMenu(song.id);
+                }
+              }}
             />
           )
         })}
@@ -270,10 +399,58 @@ export default function ExploreScreen() {
         {/* Menu */}
         <BottomSheet
           isVisible={isVisible}
-          onClose={close}
+          onClose={() => {
+            setEditMode('menu');
+            setEditSongId(null);
+            setSongName('');
+            close();
+          }}
         >
-          
-            <View>
+            {/* Edit Menu*/}
+            {editMode === 'edit' && 
+              <View>
+              {editItems.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    padding: 10
+                  }}
+                  onPress={() => handleEditAction(item.id)}
+                  >
+                  <Text style={{ fontSize: 20, marginRight: 16}}>Some icon</Text>
+                  <Text
+                    variant='body'
+                    style={{
+                    flex: 1,
+                    }}
+                  >{item.title}</Text>
+                  </TouchableOpacity>
+                ))}
+                  
+              </View>}
+
+            {/* Rename Menu */}
+            {editMode === 'rename' && <View>
+              <Text variant='title'>Rename song</Text>
+                <Input
+                  label='Rename Song'
+                  placeholder={songs.find(s => s.id === editSongId)?.title || ''}
+                  value={songName}
+                  onChangeText={(text) => 
+                    setSongName(text)
+                  }
+                  variant='outline'
+                  error={renameError}
+                />
+                <Button onPress={handleSubmit}>Rename Song</Button>
+
+              </View>
+            }
+
+            {/* Add/Delete Menu */}
+            {editMode === 'menu' && <View>
               {menuItems.map((item) => (
                 <TouchableOpacity
                   key={item.id}
@@ -294,7 +471,7 @@ export default function ExploreScreen() {
                   >{item.title}</Text>
                 </TouchableOpacity>
               ))}
-            </View>
+            </View>}
           
         </BottomSheet>
     </ScrollView>
