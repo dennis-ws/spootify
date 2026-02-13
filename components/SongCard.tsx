@@ -2,25 +2,19 @@ import { TouchableOpacity, StyleSheet } from 'react-native'
 import { View } from '@/components/ui/view'
 import { Text } from '@/components/ui/text'
 import { Image } from '@/components/ui/image'
-import { Song } from '@/lib/types'
+import { SongCardProps } from '@/lib/types'
 
-interface SongCardProps {
-  song: Song
-  isSelected: boolean
-  destructiveColor: string
-  onPress: () => void
-}
 
-export function SongCard({ song, isSelected, destructiveColor, onPress }: SongCardProps) {
+export function SongCard({ song, isSelected, destructiveColor, onPress, onLongPress }: SongCardProps) {
   return (
-    <TouchableOpacity onPress={onPress}>
+    <TouchableOpacity onPress={onPress} onLongPress={onLongPress}>
       <View style={[
         styles.card, 
         isSelected && { 
           backgroundColor: destructiveColor 
         }]}>
         <Image
-          source={require('@/assets/images/icon.png')}
+          source={song.image ? {uri: song.image} : require('@/assets/images/icon.png')}
           contentFit="cover"
           width={80}
           height={80}
