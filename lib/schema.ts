@@ -28,6 +28,19 @@ export async function insertPlaylist(name: string) {
     );
 }
 
+export async function updatePlaylist(id: number, column: 'name' | 'description' | 'image', toUpdate: string) {
+    const db = await getDB();
+    await db.runAsync(
+        `UPDATE PLAYLISTS
+        SET ${column} = ?
+        WHERE id = ?`,
+        [
+            toUpdate,
+            id
+        ]
+    );
+}
+
 export async function deletePlaylist(id: number) {
     const db = await getDB();
 
@@ -55,6 +68,9 @@ export async function createPlaylistSongsTable() {
             position INTEGER,
             image TEXT,
             file TEXT,
+
+            UNIQUE (playlist_id, song_id),
+
             FOREIGN KEY (playlist_id) REFERENCES PLAYLISTS(id)
             FOREIGN KEY (song_id) REFERENCES SONGS(id)
         );
@@ -68,7 +84,8 @@ export async function getSongsFromPid(playlistId: number): Promise<PlaylistSongs
         SELECT
             s.id,
             s.title,
-            s.file
+            s.file,
+            s.image
         FROM PLAYLIST_SONGS p
         INNER JOIN SONGS s
             ON s.id = p.song_id
@@ -90,16 +107,17 @@ export async function getPlaylistSongsFromSid(songId: number): Promise<PlaylistS
     return results;
 }
 
-export async function insertPlaylistSongsTable(playlistId: number, songId: number) {
+export async function insertPlaylistSongsTable(playlistId: number, songId: number, position: number) {
     const db = await getDB();
 
     await db.runAsync(`
-        INSERT OR REPLACE INTO PLAYLIST_SONGS (
-            playlist_id, song_id
-        ) VALUES (?, ?)`,
+        INSERT OR IGNORE INTO PLAYLIST_SONGS (
+            playlist_id, song_id, position
+        ) VALUES (?, ?, ?)`,
         [
             playlistId, 
-            songId
+            songId,
+            position
         ]    
     );
 }
@@ -112,13 +130,32 @@ export async function getPlaylistSongsTable(): Promise<PlaylistSongs[]> {
     return results;
 }
 
-export async function getPlaylistSongs(playlistId: number): Promise<PlaylistSongs[]> {
+export async function getPlaylistSongs(playlistId: number, column: string = 'playlist_id', append: string = ''): Promise<PlaylistSongs[]> {
     const db = await getDB();
     const results = await db.getAllAsync<PlaylistSongs>(`
         SELECT * 
         FROM PLAYLIST_SONGS
-        WHERE playlist_id = ${playlistId}
-    `);
+        WHERE ${column} = ?
+        ${append}
+    `, [playlistId]);
+
+    return results;
+}
+
+export async function getPlaylistSongsAsSong(playlistId: number, column: string = 'playlist_id', append: string = ''): Promise<Song[]> {
+    const db = await getDB();
+    const results = await db.getAllAsync<Song>(`
+        SELECT
+            s.id,
+            s.title,
+            s.file,
+            s.image
+        FROM PLAYLIST_SONGS p
+        INNER JOIN SONGS s
+            ON s.id = p.song_id
+        WHERE p.playlist_id = ?
+        ORDER BY p.position ASC
+    `, [playlistId])
 
     return results;
 }
@@ -168,7 +205,10 @@ export async function deleteSong(id: number) {
 export async function getSong(id: number): Promise<Song> {
     const db = await getDB();
     const results = await db.getAllAsync<Song>(`
-        SELECT file
+        SELECT 
+            file,
+            image,
+            title
         FROM SONGS 
         WHERE id = ${id}`);
 
