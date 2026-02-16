@@ -1,10 +1,9 @@
-import { ScrollView, Touchable, TouchableOpacity } from 'react-native';
+import { ScrollView, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/view';
-import { useEffect, useLayoutEffect, useState, useRef } from 'react';
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
-import { getPlaylistSongsTable, createPlaylistSongsTable, insertPlaylistSongsTable, getPlaylistSongsAsSong, getPlaylistSongs, getSongsFromPid, getSongTable, insertPlaylist, getSong, deletePlaylistSongs} from '@/lib/schema';
-import { Ellipsis, Search } from 'lucide-react-native';
+import { useEffect, useLayoutEffect, useState } from 'react';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { createPlaylistSongsTable, insertPlaylistSongsTable, getPlaylistSongsAsSong, getSongsFromPid, getSongTable, getSong, deletePlaylistSongs} from '@/lib/schema';
 import { StyleSheet } from 'react-native';
 import { Button } from '@/components/ui/button';
 import { useAudioContext } from '@/lib/audioSound';
@@ -12,11 +11,8 @@ import { useBottomSheet, BottomSheet } from '@/components/ui/bottom-sheet';
 import { useColor } from '@/hooks/useColor'
 import { createTwoButtonAlert } from '@/components/ui/alert'
 import { Header } from '@/components/Header'
-import { PlaylistSongCard } from '@/components/PlaylistSongCard'
 import { PlaylistSongs, Song } from '@/lib/types';
 import { SongCard } from '@/components/SongCard';
-
-import { useAudioPlayerStatus } from 'expo-audio';
 
 const menuItems = [
   {id: 'add', title: 'Add playlist'},

@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect } from 'react';
-import { useAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
+import { createContext, useContext } from 'react';
+import { setAudioModeAsync } from 'expo-audio';
 import { AudioContextValue } from './types'
 
 export const AudioContext = createContext<AudioContextValue | null>(null);

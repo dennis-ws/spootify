@@ -1,17 +1,12 @@
 import { Button } from '@/components/ui/button';
-import { Link } from '@/components/ui/link';
-import { ModeToggle } from '@/components/ui/mode-toggle';
 import { ScrollView } from '@/components/ui/scroll-view';
 import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/view';
 import { useColor } from '@/hooks/useColor';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { BookOpen, Stars, Search, Ellipsis } from 'lucide-react-native';
-import { Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { createPlaylistTable, insertPlaylist, getPlaylists, deletePlaylist, deletePlaylistSongs, updatePlaylist } from '@/lib/schema';
 import { useEffect, useState } from 'react';
-import AppLayout from '../applayout';
-import { Image } from '@/components/ui/image';
 import { useRouter } from 'expo-router';
 import { Input } from '@/components/ui/input'
 
@@ -28,9 +23,6 @@ import { Sheetmode } from '@/lib/types';
 import { Directory, File, Paths} from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { Alert } from 'react-native';
-
-
-const { width } = Dimensions.get('window');
 
 const menuItems = [
   {id: 'add', title: 'Add playlist'},
@@ -50,7 +42,6 @@ export default function HomeScreen() {
 
   const { isVisible, open, close } = useBottomSheet();
   const [addPlaylistForm, setAddPlaylistForm] = useState(false);
-  const audioPlayer = useAudioContext();
   const textColor = useColor('text');
   const destructiveColor = useColor('destructive');
   const [selectionMode, setSelectionMode] = useState(false);
@@ -428,6 +419,7 @@ export default function HomeScreen() {
     </ScrollView>
   );
 }
+
 const styles = StyleSheet.create({
     container: { 
     flex: 1, 
