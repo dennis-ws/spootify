@@ -1,8 +1,10 @@
+import { AudioPlayer } from "expo-audio";
+
 export interface Playlist {
     id: number;
     name: string;
     description: string;
-    image?: File;
+    image?: string;
 }
 
 export interface PlaylistSongs {
@@ -19,10 +21,10 @@ export interface Song {
     id: number;
     title: string;
     file: string;
-    image?: File;
+    image?: string;
 }
 
-export type Sheetmode = 'menu' | 'edit' | 'rename';
+export type Sheetmode = 'menu' | 'edit' | 'rename' | 'add';
 
 export interface PlaylistSongCardProp {
     playlist: PlaylistSongs
@@ -36,4 +38,21 @@ export interface SongCardProps {
   destructiveColor: string
   onPress: () => void
   onLongPress?: () => void
+}
+
+export interface PlaylistCardProps {
+  playlist: Playlist
+  isSelected: boolean
+  onPress: () => void
+  onLongPress: () => void
+  destructiveColor: string
+}
+
+
+export type AudioContextValue = {
+    audioPlayer: AudioPlayer;
+    queue: Song[];
+    playPlaylist: (songs: Song[]) => void;
+    playNext: () => void;
+    playSong: (song: Song) => void;
 }
