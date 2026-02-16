@@ -2,28 +2,17 @@ import { TouchableOpacity, StyleSheet } from 'react-native'
 import { View } from '@/components/ui/view'
 import { Text } from '@/components/ui/text'
 import { Image } from '@/components/ui/image'
-
-
-interface Playlist {
-  id: number
-  name: string
-}
-
-interface PlaylistCardProps {
-  playlist: Playlist
-  isSelected: boolean
-  onPress: () => void
-  destructiveColor: string
-}
+import { PlaylistCardProps } from '@/lib/types'
 
 export function PlaylistCard({
   playlist,
   isSelected,
   onPress,
+  onLongPress,
   destructiveColor,
 }: PlaylistCardProps) {
   return (
-    <TouchableOpacity onPress={onPress}>
+    <TouchableOpacity onPress={onPress} onLongPress={onLongPress}>
       <View
         style={[
           styles.playlistContent,
@@ -35,7 +24,7 @@ export function PlaylistCard({
         ]}
       >
         <Image
-          source={require('@/assets/images/icon.png')}
+          source={playlist.image ? {uri: playlist.image} : require('@/assets/images/icon.png')}
           contentFit="cover"
           width={80}
           height={80}
