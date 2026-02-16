@@ -152,14 +152,6 @@ export default function HomeScreen() {
     return [0.8]
   }
 
-  const playSong = () => {
-    audioPlayer.play();
-  };
-
-  const stopSong = () => {
-    audioPlayer.pause();
-  };
-
   const handleMenuAction = (itemId: string) => {
     if (itemId === 'add') {
       showAddPlaylistForm();
@@ -338,13 +330,6 @@ export default function HomeScreen() {
             )
           })}
       </View>
-
-
-       {/* Play buttons */}
-      <View style={styles.container}>
-        <Button onPress={playSong} />
-        <Button onPress={stopSong} />
-      </View>
       
       {/* Menu */}
               <BottomSheet
@@ -443,50 +428,6 @@ export default function HomeScreen() {
     </ScrollView>
   );
 }
-
-/**
- * {!addPlaylistForm && 
-        <View>
-          {menuItems.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                padding: 16,
-              }}
-              onPress={() => handleMenuAction(item.id)}
-            >
-              <Text style={{ fontSize: 20, marginRight: 16}}>Some icon</Text>
-              <Text
-                variant='body'
-                style={{
-                  flex: 1,
-                  color: item.destructive ? destructiveColor : textColor
-                }}
-              >{item.title}</Text>
-            </TouchableOpacity>
-          ))
-          }
-        </View>}
-
-        {addPlaylistForm &&
-        <View>
-          <Input
-            label='Playlist Name'
-            placeholder={playlistName}
-            value={playlistName}
-            onChangeText={(text) => 
-              setPlaylistName(text)
-            }
-            variant='outline'
-            error={playlistFormError}
-          />
-          <Button onPress={handleSubmit}>Make Playlist</Button>
-        </View>
-        }
- */
-
 const styles = StyleSheet.create({
     container: { 
     flex: 1, 
