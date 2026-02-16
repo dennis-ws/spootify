@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect } from 'react';
 import { useAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
+import { AudioContextValue } from './types'
 
-export const AudioContext = createContext<AudioPlayer | null>(null);
+export const AudioContext = createContext<AudioContextValue | null>(null);
 
 export function useAudioContext() {
     const ap = useContext(AudioContext);
@@ -16,6 +17,5 @@ export async function setAudioMode() {
     await setAudioModeAsync({
         playsInSilentMode: true,
         interruptionMode: 'doNotMix',
-        shouldPlayInBackground: true,
     })
 }
