@@ -1,17 +1,13 @@
 import { Button } from '@/components/ui/button';
-import { ModeToggle } from '@/components/ui/mode-toggle';
 import { ScrollView } from '@/components/ui/scroll-view';
 import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/view';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { Ellipsis, Search } from 'lucide-react-native';
 import { useState, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { createSongTable, getSongTable, insertSong, getSong, updateSong, deleteSong, 
   deletePlaylistSongs, getPlaylistSongsFromSid, 
-  createPlaylistSongsTable, getPlaylistSongs, getPlaylistSongsTable, 
-  getSongImage} from '@/lib/schema';
-import { Image } from '@/components/ui/image';
+  createPlaylistSongsTable, getPlaylistSongsTable} from '@/lib/schema';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { useAudioContext } from '@/lib/audioSound';
@@ -38,7 +34,7 @@ const editItems = [
 
 export default function ExploreScreen() {
   const bottom = useBottomTabBarHeight();
-  const audioPlayer = useAudioContext();
+  const { playSong } = useAudioContext();
 
   const textColor = useColor('text');
   const destructiveColor = useColor('destructive');
@@ -49,7 +45,6 @@ export default function ExploreScreen() {
   const [editMode, setEditMode] = useState<Sheetmode>('menu');
   const [editSongId, setEditSongId] = useState<number | null>(null);
   const [songName, setSongName] = useState<string>('');
-  const [imageUri, setImageUri] = useState<string>('');
   const [submitted, setSubmitted] = useState(false);
 
   const renameError =
@@ -164,7 +159,6 @@ export default function ExploreScreen() {
 
     const cacheFile = new File(result.assets[0].uri);
 
-    // Just copy — Expo will create the file for you
     cacheFile.copy(destinationFile);
 
     await updateSong(editSongId, 'image', destinationFile.uri);
@@ -175,7 +169,6 @@ export default function ExploreScreen() {
 
 
   const handleMenuAction = (itemId: string) => {
-    tmp();
     if (itemId === 'add') {
       pickMp3();
       return;
@@ -196,8 +189,7 @@ export default function ExploreScreen() {
   const setAndPlay = async (songId: number) => {
     try {
       const found = await getSong(songId);
-      audioPlayer.replace(found.file || '');
-      playSong();
+      playSong(found);
     } catch (error) {
       console.error("Error setting and playing song: ", error);
     }
@@ -239,23 +231,6 @@ export default function ExploreScreen() {
     const currentSongs = await getSongTable();
     console.log('Current songs after deletion: ', currentSongs);
   };
-
-
-  const playSong = () => {
-    audioPlayer.play();
-  }
-
-  const pauseSong = () => {
-    audioPlayer.pause();
-  }
-
-  const tmp = async () => {
-    const db = await getSongTable();
-    console.log(db);
-    const pdb = await getPlaylistSongsTable();
-    console.log(pdb);
-  }
-
 
     const confirmDelete = () => {
       createTwoButtonAlert({
@@ -389,12 +364,6 @@ export default function ExploreScreen() {
         })}
       </View>
 
-
-      {/* Play buttons */}
-      <View style={styles.container}>
-        <Button onPress={() => playSong()} />
-        <Button onPress={() => pauseSong()} />
-      </View>
 
         {/* Menu */}
         <BottomSheet

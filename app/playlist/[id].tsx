@@ -1,9 +1,9 @@
 import { ScrollView, Touchable, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/view';
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState, useRef } from 'react';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
-import { getPlaylistSongsTable, createPlaylistSongsTable, insertPlaylistSongsTable, getSongsFromPid, getSongTable, insertPlaylist, getSong, deletePlaylistSongs} from '@/lib/schema';
+import { getPlaylistSongsTable, createPlaylistSongsTable, insertPlaylistSongsTable, getPlaylistSongsAsSong, getPlaylistSongs, getSongsFromPid, getSongTable, insertPlaylist, getSong, deletePlaylistSongs} from '@/lib/schema';
 import { Ellipsis, Search } from 'lucide-react-native';
 import { StyleSheet } from 'react-native';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,9 @@ import { createTwoButtonAlert } from '@/components/ui/alert'
 import { Header } from '@/components/Header'
 import { PlaylistSongCard } from '@/components/PlaylistSongCard'
 import { PlaylistSongs, Song } from '@/lib/types';
+import { SongCard } from '@/components/SongCard';
+
+import { useAudioPlayerStatus } from 'expo-audio';
 
 const menuItems = [
   {id: 'add', title: 'Add playlist'},
@@ -21,7 +24,7 @@ const menuItems = [
 ]
 
 export default function Playlist() {
-    const audioPlayer = useAudioContext();
+    const { playPlaylist, playSong} = useAudioContext();
     const { id } = useLocalSearchParams();
     const idNumber = Number(id);
     const navigation = useNavigation();
@@ -34,6 +37,8 @@ export default function Playlist() {
 
 
     const [playlistSongs, setPlaylistSongs] = useState<PlaylistSongs[]>();
+    const [psong, setPsongs] = useState<Song[]>([]);
+    const [psongId, setPsongId] = useState<Set<number>>(new Set());
     const [songs, setSongs] = useState<Song[]>([]);
     const selected = useColor('green');
 
@@ -44,6 +49,9 @@ export default function Playlist() {
     const loadPlaylistSongs = async () => {
         const table = await getSongsFromPid(idNumber);
         setPlaylistSongs(table);
+        const ptable = await getPlaylistSongsAsSong(idNumber);
+        setPsongs(ptable);
+        setPsongId(new Set(ptable.map((song) => song.id)))
     }
 
     const loadSongs = async () => {
@@ -77,10 +85,13 @@ export default function Playlist() {
 
     const addSong = async () => {
         console.log("Adding song!");
-        selectedIds.forEach(async (songId) => {
-            await insertPlaylistSongsTable(idNumber, songId);
-        })
+        let curLength = psong.length;
+        for (const songId of selectedIds) {
+            if (psongId.has(songId)) continue;
 
+            await insertPlaylistSongsTable(idNumber, songId, curLength);
+            curLength += 1;
+        }
     }
 
     const toggleSelect = (id: number) => {
@@ -100,19 +111,10 @@ export default function Playlist() {
     const setAndPlay = async (songId: number) => {
         try {
         const found = await getSong(songId);
-        audioPlayer.replace(found.file || '');
-        playSong();
+        playSong(found);
         } catch (error) {
         console.error("Error setting and playing song: ", error);
         }
-    }
-
-    const playSong = () => {
-        audioPlayer.play();
-    }
-
-    const pauseSong = () => {
-        audioPlayer.pause();
     }
 
     const handleMenuAction = (itemId: string) => {
@@ -161,6 +163,18 @@ export default function Playlist() {
         });
       };
 
+    const playSongs = async () => {
+        if (!playlistSongs || playlistSongs.length === 0) {
+            console.warn('No songs in playlist to play.');
+            return;
+        }
+        try {
+            playPlaylist(psong)
+        } catch (error) {
+            console.error("Error playing playlist: ", error);
+        }
+    }
+
     return (
         <ScrollView>
             {/* Header */}
@@ -171,7 +185,7 @@ export default function Playlist() {
             
             <View>
                 {/* Big image here*/}
-
+                <Button onPress={playSongs}>Play Playlist</Button>
                 {/* Selection mode for deleting*/}
                 {selectionMode && (
                     <View style={{ padding: 16 }}>
@@ -200,16 +214,17 @@ export default function Playlist() {
                     {playlistSongs?.map((psong) => {
                         const isSelected = selectedIds.has(psong.id);
                         return (
-                            <PlaylistSongCard
+                            <SongCard
                                 key={psong.id}
-                                playlist={psong}
+                                song={psong}
                                 isSelected={isSelected}
+                                destructiveColor={destructiveColor}
                                 onPress={() => 
                                     selectionMode 
                                     ? toggleSelect(psong.id) 
                                     : setAndPlay(psong.id)}
                             />
-                       ) 
+                       )
                     })}
                 </View>
                     
