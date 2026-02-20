@@ -77,6 +77,21 @@ export async function createPlaylistSongsTable() {
     `);
 }
 
+export async function updatePlaylistSongPosition(playlistId: number, songId: number, position: number) {
+    const db = await getDB();
+
+    await db.runAsync(`
+        UPDATE PLAYLIST_SONGS 
+        SET position = ?
+        WHERE playlist_id = ? AND song_id = ?`,
+        [
+            position,
+            playlistId,
+            songId
+        ]
+    );
+}
+
 export async function getSongsFromPid(playlistId: number): Promise<PlaylistSongs[]> {
     const db = await getDB();
 
