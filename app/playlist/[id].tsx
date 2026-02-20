@@ -178,27 +178,8 @@ export default function track() {
         });
       };
 
-    const playSongs = async () => {
-        if (!Track || Track.length === 0) {
-            console.warn('No songs in playlist to play.');
-            return;
-        }
-        try {
-            playPlaylist(psong)
-        } catch (error) {
-            console.error("Error playing playlist: ", error);
-        }
-    }
-
     const handleBack = async () => {
         setEditMode('menu');
-    }
-
-    const handleSizing = (title: string): string => {
-        if (title.length > 25) {
-            return `${title.slice(0,25)}...`;
-        }
-        return title;
     }
 
     const handleReorder = async (reordered: Song[]) => {
