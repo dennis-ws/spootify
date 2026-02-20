@@ -1,5 +1,5 @@
 import { getDB } from "./db";
-import { Playlist, PlaylistSongs, Song} from './types';
+import { Playlist, Track, Song} from './types';
 
 export async function createPlaylistTable() {
     const db = await getDB();
@@ -70,7 +70,7 @@ export async function getPlaylist(id: number): Promise<Playlist> {
     return result[0];
 }
 
-export async function createPlaylistSongsTable() {
+export async function createTrackTable() {
     const db = await getDB();
 
     await db.execAsync(`
@@ -90,7 +90,7 @@ export async function createPlaylistSongsTable() {
     `);
 }
 
-export async function updatePlaylistSongPosition(playlistId: number, songId: number, position: number) {
+export async function updateTrackPosition(playlistId: number, songId: number, position: number) {
     const db = await getDB();
 
     await db.runAsync(`
@@ -105,10 +105,10 @@ export async function updatePlaylistSongPosition(playlistId: number, songId: num
     );
 }
 
-export async function getSongsFromPid(playlistId: number): Promise<PlaylistSongs[]> {
+export async function getSongsFromPid(playlistId: number): Promise<Track[]> {
     const db = await getDB();
 
-    const results = await db.getAllAsync<PlaylistSongs>(`
+    const results = await db.getAllAsync<Track>(`
         SELECT
             s.id,
             s.title,
@@ -124,9 +124,9 @@ export async function getSongsFromPid(playlistId: number): Promise<PlaylistSongs
     return results;
 }
 
-export async function getPlaylistSongsFromSid(songId: number): Promise<PlaylistSongs[]> {
+export async function getTrackFromSid(songId: number): Promise<Track[]> {
     const db = await getDB();
-    const results = await db.getAllAsync<PlaylistSongs>(`
+    const results = await db.getAllAsync<Track>(`
         SELECT
             p.id
         FROM PLAYLIST_SONGS p
@@ -135,7 +135,7 @@ export async function getPlaylistSongsFromSid(songId: number): Promise<PlaylistS
     return results;
 }
 
-export async function insertPlaylistSongsTable(playlistId: number, songId: number, position: number) {
+export async function insertTrackTable(playlistId: number, songId: number, position: number) {
     const db = await getDB();
 
     await db.runAsync(`
@@ -150,17 +150,17 @@ export async function insertPlaylistSongsTable(playlistId: number, songId: numbe
     );
 }
 
-export async function getPlaylistSongsTable(): Promise<PlaylistSongs[]> {
+export async function getTrackTable(): Promise<Track[]> {
     const db = await getDB();
 
-    const results = await db.getAllAsync<PlaylistSongs>(`SELECT * FROM PLAYLIST_SONGS`);
+    const results = await db.getAllAsync<Track>(`SELECT * FROM PLAYLIST_SONGS`);
     
     return results;
 }
 
-export async function getPlaylistSongs(playlistId: number, column: string = 'playlist_id', append: string = ''): Promise<PlaylistSongs[]> {
+export async function getTrack(playlistId: number, column: string = 'playlist_id', append: string = ''): Promise<Track[]> {
     const db = await getDB();
-    const results = await db.getAllAsync<PlaylistSongs>(`
+    const results = await db.getAllAsync<Track>(`
         SELECT * 
         FROM PLAYLIST_SONGS
         WHERE ${column} = ?
@@ -170,7 +170,7 @@ export async function getPlaylistSongs(playlistId: number, column: string = 'pla
     return results;
 }
 
-export async function getPlaylistSongsAsSong(playlistId: number, column: string = 'playlist_id', append: string = ''): Promise<Song[]> {
+export async function getTrackAsSong(playlistId: number, column: string = 'playlist_id', append: string = ''): Promise<Song[]> {
     const db = await getDB();
     const results = await db.getAllAsync<Song>(`
         SELECT
@@ -194,7 +194,7 @@ export async function getPlaylistSongsAsSong(playlistId: number, column: string 
  * @param column By default it will delete based on ID column, 
  *  else you can specify to delte by playlist_id or song_id
  */
-export async function deletePlaylistSongs(
+export async function deleteTrack(
   id: number,
   column: 'id' | 'playlist_id' | 'song_id' = 'id'
 ) {
@@ -293,7 +293,7 @@ export async function clearDatabase() {
     `);
 }
 
-export async function clearPlaylistSongs() {
+export async function clearTrack() {
     const db = await getDB();
     await db.execAsync(`
         DROP TABLE IF EXISTS PLAYLIST_SONGS;

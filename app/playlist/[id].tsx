@@ -3,7 +3,7 @@ import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/view';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
-import { createPlaylistSongsTable, insertPlaylistSongsTable, getPlaylist, getPlaylistSongsAsSong, updatePlaylistSongPosition, getSongsFromPid, getSongTable, getSong, deletePlaylistSongs, getPlaylistSongs} from '@/lib/schema';
+import { createTrackTable, insertTrackTable, getPlaylist, getTrackAsSong, updateTrackPosition, getSongsFromPid, getSongTable, getSong, deleteTrack, getTrack} from '@/lib/schema';
 import { StyleSheet } from 'react-native';
 import { Button } from '@/components/ui/button';
 import { useAudioContext } from '@/lib/audioSound';
@@ -11,7 +11,7 @@ import { useBottomSheet, BottomSheet } from '@/components/ui/bottom-sheet';
 import { useColor } from '@/hooks/useColor'
 import { createTwoButtonAlert } from '@/components/ui/alert'
 import { Header } from '@/components/Header'
-import { PlaylistSongs, Song, Playlist } from '@/lib/types';
+import { Track, Song, Playlist } from '@/lib/types';
 import { SongCard } from '@/components/SongCard';
 import { Sheetmode } from '@/lib/types';
 import { Image } from '@/components/ui/image'
@@ -26,7 +26,7 @@ const menuItems = [
   {id: 'position', title: 'Edit song positions'}
 ]
 
-export default function PlaylistSong() {
+export default function track() {
     const { playPlaylist, playSong} = useAudioContext();
     const { id } = useLocalSearchParams();
     const idNumber = Number(id);
@@ -39,21 +39,21 @@ export default function PlaylistSong() {
     const textColor = useColor('text');
 
     const [playlist, setPlaylist] = useState<Playlist>();
-    const [playlistSongs, setPlaylistSongs] = useState<PlaylistSongs[]>();
+    const [Track, setTrack] = useState<Track[]>();
     const [psong, setPsongs] = useState<Song[]>([]);
     const [psongId, setPsongId] = useState<Set<number>>(new Set());
     const [songs, setSongs] = useState<Song[]>([]);
     const selected = useColor('green');
 
     const reload = async () => {
-        await loadPlaylistSongs();
+        await loadTrack();
         await loadSongs();
     }
 
-    const loadPlaylistSongs = async () => {
+    const loadTrack = async () => {
         const table = await getSongsFromPid(idNumber);
-        setPlaylistSongs(table);
-        const ptable = await getPlaylistSongsAsSong(idNumber);
+        setTrack(table);
+        const ptable = await getTrackAsSong(idNumber);
         setPsongs(ptable);
         setPsongId(new Set(ptable.map((song) => song.id)))
     }
@@ -70,8 +70,8 @@ export default function PlaylistSong() {
 
     useEffect(() => {
         async function init() {
-            await createPlaylistSongsTable();
-            await loadPlaylistSongs();
+            await createTrackTable();
+            await loadTrack();
             await loadSongs();
         }
 
@@ -88,7 +88,7 @@ export default function PlaylistSong() {
 
     const handleAddSong = async () => {
         await addSong();
-        await loadPlaylistSongs();
+        await loadTrack();
         closeSongs();
     }
 
@@ -98,7 +98,7 @@ export default function PlaylistSong() {
         for (const songId of selectedIds) {
             if (psongId.has(songId)) continue;
 
-            await insertPlaylistSongsTable(idNumber, songId, curLength);
+            await insertTrackTable(idNumber, songId, curLength);
             curLength += 1;
         }
     }
@@ -150,7 +150,7 @@ export default function PlaylistSong() {
         console.log('Deleting songs with IDS: ', Array.from(selectedIds));
 
         for (const sid of selectedIds) {
-            await deletePlaylistSongs(sid, 'song_id');
+            await deleteTrack(sid, 'song_id');
         }
 
         reload();
@@ -179,7 +179,7 @@ export default function PlaylistSong() {
       };
 
     const playSongs = async () => {
-        if (!playlistSongs || playlistSongs.length === 0) {
+        if (!Track || Track.length === 0) {
             console.warn('No songs in playlist to play.');
             return;
         }
@@ -205,7 +205,7 @@ export default function PlaylistSong() {
         try {
             for (let i = 0; i < reordered.length; i++) {
                 const song = reordered[i];
-                await updatePlaylistSongPosition(idNumber, song.id, i);
+                await updateTrackPosition(idNumber, song.id, i);
 
             }
         } catch (error) {
@@ -257,7 +257,7 @@ export default function PlaylistSong() {
             <View>
                 {/* Songs */}
                 <View style={styles.songBox}>
-                    {playlistSongs?.map((psong) => {
+                    {Track?.map((psong) => {
                         const isSelected = selectedIds.has(psong.id);
                         return (
                             <SongCard

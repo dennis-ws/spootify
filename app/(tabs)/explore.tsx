@@ -6,8 +6,8 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useState, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { createSongTable, getSongTable, insertSong, getSong, updateSong, deleteSong, 
-  deletePlaylistSongs, getPlaylistSongsFromSid, 
-  createPlaylistSongsTable } from '@/lib/schema';
+  deleteTrack, getTrackFromSid, 
+  createTrackTable } from '@/lib/schema';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { useAudioContext } from '@/lib/audioSound';
@@ -63,7 +63,7 @@ export default function ExploreScreen() {
   useEffect(() => {
     async function init() {
       await loadSongs();
-      await createPlaylistSongsTable();
+      await createTrackTable();
     }
     init();
   }, []);
@@ -207,11 +207,11 @@ export default function ExploreScreen() {
         await deleteSong(sid);
         console.log(`Deleted song with ID ${sid}`);
 
-        const pids = await getPlaylistSongsFromSid(sid);
+        const pids = await getTrackFromSid(sid);
         console.log(`Found ${pids.length} playlist songs associated with song ID ${sid}`);
 
         for (const pid of pids) {
-          await deletePlaylistSongs(pid.id);
+          await deleteTrack(pid.id);
           console.log(`Deleted playlist song ${pid.id}`);
         }
 

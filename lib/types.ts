@@ -7,7 +7,7 @@ export interface Playlist {
     image?: string;
 }
 
-export interface PlaylistSongs {
+export interface Track {
     id: number;
     playlist_id: number;
     song_id: number;
@@ -26,8 +26,8 @@ export interface Song {
 
 export type Sheetmode = 'menu' | 'edit' | 'rename' | 'add' | 'position';
 
-export interface PlaylistSongCardProp {
-    playlist: PlaylistSongs
+export interface TrackCardProp {
+    playlist: Track
     isSelected: boolean
     onPress: () => void
 }

@@ -5,7 +5,7 @@ import { View } from '@/components/ui/view';
 import { useColor } from '@/hooks/useColor';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { StyleSheet, TouchableOpacity } from 'react-native';
-import { createPlaylistTable, insertPlaylist, getPlaylists, deletePlaylist, deletePlaylistSongs, updatePlaylist } from '@/lib/schema';
+import { createPlaylistTable, insertPlaylist, getPlaylists, deletePlaylist, deleteTrack, updatePlaylist } from '@/lib/schema';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Input } from '@/components/ui/input'
@@ -183,7 +183,7 @@ export default function HomeScreen() {
       await deletePlaylist(id);
       console.log("Deleted playlist with ID: ", id);
       // Delete all playlist songs associated with the playlist
-      await deletePlaylistSongs(id, 'playlist_id');
+      await deleteTrack(id, 'playlist_id');
       console.log("Deleted playlist songs associated with playlist ID: ", id);
     };
     setSelectionMode(false);
