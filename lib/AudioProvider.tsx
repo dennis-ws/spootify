@@ -16,30 +16,32 @@ export function AudioProvider({children}: {children: React.ReactNode}) {
     }, [])
 
     useEffect(() => {
-        if (!audioStatus.didJustFinish) return;
+        if (!audioStatus.didJustFinish || !nowPlaying) return;
 
         // we just finished a song, play next
-        if (nowPlaying) {
-            console.log("Finish playing: ", nowPlaying.title);
+        if (queue.length > 0) {
             playNext();
+        } else {
+            cleanUp();
         }
-        if (!queue.length) {cleanUp()}
         
         
 
     }, [audioStatus.didJustFinish])
 
     const playSong = (song: Song) => {
-        console.log("Playing song: ", song.title);
+        console.log("Playing song: ", song.title, "\nFile: ", song.file);
         audioPlayer.replace(song.file);
         audioPlayer.play();
         setNowPlaying(song);
+        console.log("Finish playing: ", song.title);
     };
 
     const playPlaylist = (songs: Song[]) => {
+        console.log("Attempting to play: ", songs);
+        
         if (!songs.length) return;
 
-        console.log("Attempting to play: ", songs);
         setQueue(songs);
         playSong(songs[0]);
     }
