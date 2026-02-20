@@ -24,7 +24,7 @@ export interface Song {
     image?: string;
 }
 
-export type Sheetmode = 'menu' | 'edit' | 'rename' | 'add';
+export type Sheetmode = 'menu' | 'edit' | 'rename' | 'add' | 'position';
 
 export interface PlaylistSongCardProp {
     playlist: PlaylistSongs
@@ -55,4 +55,9 @@ export type AudioContextValue = {
     playPlaylist: (songs: Song[]) => void;
     playNext: () => void;
     playSong: (song: Song) => void;
+}
+
+export type DraggableSongListProps = {
+    data: Song[]
+    onReorder: (songs: Song[]) => void
 }
