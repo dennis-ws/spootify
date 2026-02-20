@@ -3,7 +3,7 @@ import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/view';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
-import { createPlaylistSongsTable, insertPlaylistSongsTable, getPlaylistSongsAsSong, getSongsFromPid, getSongTable, getSong, deletePlaylistSongs} from '@/lib/schema';
+import { createPlaylistSongsTable, insertPlaylistSongsTable, getPlaylistSongsAsSong, updatePlaylistSongPosition, getSongsFromPid, getSongTable, getSong, deletePlaylistSongs, getPlaylistSongs} from '@/lib/schema';
 import { StyleSheet } from 'react-native';
 import { Button } from '@/components/ui/button';
 import { useAudioContext } from '@/lib/audioSound';
@@ -13,10 +13,17 @@ import { createTwoButtonAlert } from '@/components/ui/alert'
 import { Header } from '@/components/Header'
 import { PlaylistSongs, Song } from '@/lib/types';
 import { SongCard } from '@/components/SongCard';
+import { Sheetmode } from '@/lib/types';
+import { Image } from '@/components/ui/image'
+import { GripVerticalIcon } from 'lucide-react-native'
+import DraggableSongList from '@/components/DraggableList'
+import { FlatList } from 'react-native'
+import { NestableScrollContainer } from "react-native-draggable-flatlist"
 
 const menuItems = [
   {id: 'add', title: 'Add playlist'},
-  {id: 'delete', title: 'Delete playlists', destructive: true}
+  {id: 'delete', title: 'Delete playlists', destructive: true},
+  {id: 'position', title: 'Edit song positions'}
 ]
 
 export default function Playlist() {
@@ -27,7 +34,7 @@ export default function Playlist() {
     const {isVisible, open, close} = useBottomSheet();
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
     const [selectionMode, setSelectionMode] = useState(false);
-    const [addPlaylistSong, setAddPlaylistSong] = useState(false);
+    const [editMode, setEditMode] = useState<Sheetmode>('menu');
     const destructiveColor = useColor('destructive');
     const textColor = useColor('text');
 
@@ -63,7 +70,7 @@ export default function Playlist() {
         }
 
         init();
-    }, [])
+    }, [psong])
 
     /** Set Header */
     useLayoutEffect(() => {
@@ -100,7 +107,7 @@ export default function Playlist() {
 
     const closeSongs = () => {
         setSelectedIds(new Set());
-        setAddPlaylistSong(false);
+        setEditMode('menu');
         close();
     }
 
@@ -116,13 +123,19 @@ export default function Playlist() {
     const handleMenuAction = (itemId: string) => {
         if (itemId === 'add') {
             setSelectionMode(false); // if it was true, just set it to false
-            setAddPlaylistSong(true);
+            setEditMode(itemId);
             return;
         }
 
         if (itemId === 'delete') {
             setSelectionMode(true);
             close();
+            return;
+        }
+
+        if (itemId === 'position') {
+            setSelectionMode(false);
+            setEditMode('position');
             return;
         }
     }
@@ -171,17 +184,46 @@ export default function Playlist() {
         }
     }
 
+    const handleBack = async () => {
+        setEditMode('menu');
+    }
+
+    const handleSizing = (title: string): string => {
+        if (title.length > 25) {
+            return `${title.slice(0,25)}...`;
+        }
+        return title;
+    }
+
+    const handleReorder = async (reordered: Song[]) => {
+        try {
+            for (let i = 0; i < reordered.length; i++) {
+                const song = reordered[i];
+                await updatePlaylistSongPosition(idNumber, song.id, i);
+
+            }
+        } catch (error) {
+            console.log("Failed to reorder playlist", error);
+            await loadPlaylistSongs(); // load the previous playlist songs
+        }
+    }
+
     return (
-        <ScrollView>
-            {/* Header */}
-            <Header
-                leftPress={() => {}}
-                rightPress={open}
-            />
+        <>
+        <NestableScrollContainer>
+            <View>
+                {/* Header */}
+                <Header
+                    leftPress={() => {}}
+                    rightPress={open}
+                />
+            </View>
             
             <View>
                 {/* Big image here*/}
                 <Button onPress={playSongs}>Play Playlist</Button>
+            </View>
+            <View>
                 {/* Selection mode for deleting*/}
                 {selectionMode && (
                     <View style={{ padding: 16 }}>
@@ -204,7 +246,9 @@ export default function Playlist() {
                         </Button>
                     </View>
                 )}
+            </View>
 
+            <View>
                 {/* Songs */}
                 <View style={styles.songBox}>
                     {playlistSongs?.map((psong) => {
@@ -223,14 +267,15 @@ export default function Playlist() {
                        )
                     })}
                 </View>
-                    
-                {/* BottomSheet for adding songs to playlist */}
+            </View>
+        </NestableScrollContainer>
+        {/* BottomSheet for adding songs to playlist */}
                 <BottomSheet
                     isVisible={isVisible}
                     onClose={closeSongs}
                     snapPoints={[0.8]}
                 > 
-                    {!addPlaylistSong &&
+                    {editMode === 'menu' &&
                     <View>
                         {menuItems.map((item) => (
                         <TouchableOpacity
@@ -257,7 +302,7 @@ export default function Playlist() {
                     }
 
 
-                    {addPlaylistSong && 
+                    {editMode === 'add' && 
                     <View style={styles.bottomSheetBox}>
                         <View style={styles.bottomSheetButtonBox} >
                             <Button
@@ -294,10 +339,27 @@ export default function Playlist() {
                             })}
                         </View>
                     </View>}
+
+                    {editMode === 'position' &&
+                    <View style={styles.bottomSheetBox}>
+                        <View style={styles.bottomSheetButtonBox}>
+                            <Button
+                                onPress={handleBack}
+                            >
+                                Go back
+                            </Button>
+                        </View>
+                        
+                        {editMode === 'position' && (
+                        <DraggableSongList
+                            data={psong}
+                            onReorder={handleReorder}
+                        />
+                        )}
+                    </View>}
                 </BottomSheet>
 
-            </View>
-        </ScrollView>
+        </>
     );
 }
 
@@ -355,5 +417,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 10, // this is for future when i add image in or something lmao
     padding: 10,
-  }
+  },
+  positionSongBox: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    gap: 10,
+    backgroundColor: 'red'
+  },
+    positionSongContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 12,
+    gap: 12,
+    },
+    positionTextBox: {
+        flex: 1,
+        minWidth: 0,
+    },
 });
