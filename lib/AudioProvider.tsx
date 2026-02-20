@@ -20,6 +20,7 @@ export function AudioProvider({children}: {children: React.ReactNode}) {
 
         // we just finished a song, play next
         if (queue.length > 0) {
+            console.log("Finish Playing!");
             playNext();
         } else {
             cleanUp();
@@ -34,16 +35,15 @@ export function AudioProvider({children}: {children: React.ReactNode}) {
         audioPlayer.replace(song.file);
         audioPlayer.play();
         setNowPlaying(song);
-        console.log("Finish playing: ", song.title);
     };
 
     const playPlaylist = (songs: Song[]) => {
         console.log("Attempting to play: ", songs);
         
         if (!songs.length) return;
-
-        setQueue(songs);
-        playSong(songs[0]);
+        const [song, ...rest] = songs;
+        setQueue(rest);
+        playSong(song);
     }
 
     const playNext = () => {
