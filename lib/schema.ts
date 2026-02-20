@@ -49,12 +49,25 @@ export async function deletePlaylist(id: number) {
     )
 }
 
-export async function getPlaylists() {
+export async function getPlaylists(): Promise<Playlist[]> {
     const db = await getDB();
 
-    const results = await db.getAllAsync(`SELECT * FROM PLAYLISTS`);
+    const results = await db.getAllAsync<Playlist>(`SELECT * FROM PLAYLISTS`);
 
     return results;
+}
+
+export async function getPlaylist(id: number): Promise<Playlist> {
+    const db = await getDB();
+    const result = await db.getAllAsync<Playlist>(
+        `SELECT * FROM PLAYLISTS
+        WHERE id = ?`,
+        [
+            id
+        ]
+    );
+
+    return result[0];
 }
 
 export async function createPlaylistSongsTable() {

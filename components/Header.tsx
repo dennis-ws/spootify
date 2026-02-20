@@ -7,16 +7,18 @@ import { Text } from '@/components/ui/text'
 
 
 interface HeaderProp {
+    playPlaylist?: () => void | null
+    heading: string
     rightPress: () => void
     leftPress: () => void
 }
 
-export function Header({leftPress, rightPress}: HeaderProp) {
+export function Header({playPlaylist, heading, leftPress, rightPress}: HeaderProp) {
     
     return (
     <View style={styles.header}>
         <View style={styles.headerContent}>
-            <Text variant='heading'>Playlist</Text>
+            <Text variant='heading'>{`${heading}`}</Text>
 
             <ModeToggle />
         </View>

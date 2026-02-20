@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { createSongTable, getSongTable, insertSong, getSong, updateSong, deleteSong, 
   deletePlaylistSongs, getPlaylistSongsFromSid, 
-  createPlaylistSongsTable, getPlaylistSongsTable} from '@/lib/schema';
+  createPlaylistSongsTable } from '@/lib/schema';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { useAudioContext } from '@/lib/audioSound';
@@ -313,6 +313,7 @@ export default function ExploreScreen() {
     >
       {/* Header */}
       <Header
+        heading="Songs"
         leftPress={() => {}}
         rightPress={openMenu}
       />

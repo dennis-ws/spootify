@@ -3,7 +3,7 @@ import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/view';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
-import { createPlaylistSongsTable, insertPlaylistSongsTable, getPlaylistSongsAsSong, updatePlaylistSongPosition, getSongsFromPid, getSongTable, getSong, deletePlaylistSongs, getPlaylistSongs} from '@/lib/schema';
+import { createPlaylistSongsTable, insertPlaylistSongsTable, getPlaylist, getPlaylistSongsAsSong, updatePlaylistSongPosition, getSongsFromPid, getSongTable, getSong, deletePlaylistSongs, getPlaylistSongs} from '@/lib/schema';
 import { StyleSheet } from 'react-native';
 import { Button } from '@/components/ui/button';
 import { useAudioContext } from '@/lib/audioSound';
@@ -11,7 +11,7 @@ import { useBottomSheet, BottomSheet } from '@/components/ui/bottom-sheet';
 import { useColor } from '@/hooks/useColor'
 import { createTwoButtonAlert } from '@/components/ui/alert'
 import { Header } from '@/components/Header'
-import { PlaylistSongs, Song } from '@/lib/types';
+import { PlaylistSongs, Song, Playlist } from '@/lib/types';
 import { SongCard } from '@/components/SongCard';
 import { Sheetmode } from '@/lib/types';
 import { Image } from '@/components/ui/image'
@@ -26,7 +26,7 @@ const menuItems = [
   {id: 'position', title: 'Edit song positions'}
 ]
 
-export default function Playlist() {
+export default function PlaylistSong() {
     const { playPlaylist, playSong} = useAudioContext();
     const { id } = useLocalSearchParams();
     const idNumber = Number(id);
@@ -38,7 +38,7 @@ export default function Playlist() {
     const destructiveColor = useColor('destructive');
     const textColor = useColor('text');
 
-
+    const [playlist, setPlaylist] = useState<Playlist>();
     const [playlistSongs, setPlaylistSongs] = useState<PlaylistSongs[]>();
     const [psong, setPsongs] = useState<Song[]>([]);
     const [psongId, setPsongId] = useState<Set<number>>(new Set());
@@ -47,6 +47,7 @@ export default function Playlist() {
 
     const reload = async () => {
         await loadPlaylistSongs();
+        await loadSongs();
     }
 
     const loadPlaylistSongs = async () => {
@@ -62,6 +63,11 @@ export default function Playlist() {
         setSongs(table);
     }
 
+    const loadPlaylist = async () => {
+        const playlistInfo = await getPlaylist(idNumber);
+        setPlaylist(playlistInfo);
+    }
+
     useEffect(() => {
         async function init() {
             await createPlaylistSongsTable();
@@ -70,7 +76,7 @@ export default function Playlist() {
         }
 
         init();
-    }, [psong])
+    }, [])
 
     /** Set Header */
     useLayoutEffect(() => {
@@ -204,16 +210,17 @@ export default function Playlist() {
             }
         } catch (error) {
             console.log("Failed to reorder playlist", error);
-            await loadPlaylistSongs(); // load the previous playlist songs
         }
+        reload();
     }
 
     return (
         <>
         <NestableScrollContainer>
             <View>
-                {/* Header */}
+                {/* Header and Play Playlist*/}
                 <Header
+                    heading={`${idNumber}`}
                     leftPress={() => {}}
                     rightPress={open}
                 />
@@ -221,7 +228,6 @@ export default function Playlist() {
             
             <View>
                 {/* Big image here*/}
-                <Button onPress={playSongs}>Play Playlist</Button>
             </View>
             <View>
                 {/* Selection mode for deleting*/}

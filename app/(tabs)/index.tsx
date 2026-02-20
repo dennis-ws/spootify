@@ -275,6 +275,7 @@ export default function HomeScreen() {
     >
       {/* Header */}
       <Header
+        heading="Playlists"
         leftPress={() => {}}
         rightPress={open}
       />
