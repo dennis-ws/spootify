@@ -16,11 +16,12 @@ export function AudioProvider({children}: {children: React.ReactNode}) {
     }, [])
 
     useEffect(() => {
-        if (!audioStatus.didJustFinish || !nowPlaying) return;
+        audioPlayer.play();
+        if (!audioStatus.didJustFinish) return;
 
         // we just finished a song, play next
         if (queue.length > 0) {
-            console.log("Finish Playing!");
+            console.log("Finish Playing! \nCurrent Queue: ", queue);
             playNext();
         } else {
             cleanUp();
@@ -48,13 +49,17 @@ export function AudioProvider({children}: {children: React.ReactNode}) {
 
     const playNext = () => {
         setQueue((prev) => {
-            const [, ...rest] = prev;
-            if (rest[0]) {
-                playSong(rest[0]);
+            const [song, ...rest] = prev;
+            if (song) {
+                playSong(song);
             }
 
             return rest;
         })
+    }
+
+    const pausePlayer = () => {
+        audioPlayer.pause();
     }
 
     const cleanUp = () => {

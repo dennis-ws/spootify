@@ -71,6 +71,7 @@ export default function track() {
     useEffect(() => {
         async function init() {
             await createTrackTable();
+            await loadPlaylist();
             await loadTrack();
             await loadSongs();
         }
@@ -150,7 +151,7 @@ export default function track() {
         console.log('Deleting songs with IDS: ', Array.from(selectedIds));
 
         for (const sid of selectedIds) {
-            await deleteTrack(sid, 'song_id');
+            await deleteTrack(sid, idNumber);
         }
 
         reload();
@@ -195,13 +196,26 @@ export default function track() {
         reload();
     }
 
+        const handleImage = () => {
+        return (
+            playlist?.image ??
+            psong.find(song => song.image)?.image
+        )
+    }
+
+    const handlePlay = () => {
+        playPlaylist(psong);
+    }
+
     return (
         <>
         <NestableScrollContainer>
             <View>
-                {/* Header and Play Playlist*/}
+                {/* Header */}
                 <Header
-                    heading={`${idNumber}`}
+                    image={handleImage()}
+                    playTrack={handlePlay}
+                    heading={`${playlist?.name}`}
                     leftPress={() => {}}
                     rightPress={open}
                 />

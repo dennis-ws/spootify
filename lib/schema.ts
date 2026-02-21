@@ -74,7 +74,7 @@ export async function createTrackTable() {
     const db = await getDB();
 
     await db.execAsync(`
-        CREATE TABLE IF NOT EXISTS PLAYLIST_SONGS (
+        CREATE TABLE IF NOT EXISTS TRACKS (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             playlist_id INTEGER,
             song_id INTEGER,
@@ -94,7 +94,7 @@ export async function updateTrackPosition(playlistId: number, songId: number, po
     const db = await getDB();
 
     await db.runAsync(`
-        UPDATE PLAYLIST_SONGS 
+        UPDATE TRACKS 
         SET position = ?
         WHERE playlist_id = ? AND song_id = ?`,
         [
@@ -114,7 +114,7 @@ export async function getSongsFromPid(playlistId: number): Promise<Track[]> {
             s.title,
             s.file,
             s.image
-        FROM PLAYLIST_SONGS p
+        FROM TRACKS p
         INNER JOIN SONGS s
             ON s.id = p.song_id
         WHERE p.playlist_id = ?
@@ -129,7 +129,7 @@ export async function getTrackFromSid(songId: number): Promise<Track[]> {
     const results = await db.getAllAsync<Track>(`
         SELECT
             p.id
-        FROM PLAYLIST_SONGS p
+        FROM TRACKS p
         WHERE p.song_id = ?
         `, [songId]);
     return results;
@@ -139,13 +139,13 @@ export async function insertTrackTable(playlistId: number, songId: number, posit
     const db = await getDB();
 
     await db.runAsync(`
-        INSERT OR IGNORE INTO PLAYLIST_SONGS (
+        INSERT OR IGNORE INTO TRACKS (
             playlist_id, song_id, position
         ) VALUES (?, ?, ?)`,
         [
             playlistId, 
             songId,
-            position
+            position,
         ]    
     );
 }
@@ -153,7 +153,7 @@ export async function insertTrackTable(playlistId: number, songId: number, posit
 export async function getTrackTable(): Promise<Track[]> {
     const db = await getDB();
 
-    const results = await db.getAllAsync<Track>(`SELECT * FROM PLAYLIST_SONGS`);
+    const results = await db.getAllAsync<Track>(`SELECT * FROM TRACKS`);
     
     return results;
 }
@@ -162,7 +162,7 @@ export async function getTrack(playlistId: number, column: string = 'playlist_id
     const db = await getDB();
     const results = await db.getAllAsync<Track>(`
         SELECT * 
-        FROM PLAYLIST_SONGS
+        FROM TRACKS
         WHERE ${column} = ?
         ${append}
     `, [playlistId]);
@@ -178,7 +178,7 @@ export async function getTrackAsSong(playlistId: number, column: string = 'playl
             s.title,
             s.file,
             s.image
-        FROM PLAYLIST_SONGS p
+        FROM TRACKS p
         INNER JOIN SONGS s
             ON s.id = p.song_id
         WHERE p.playlist_id = ?
@@ -192,16 +192,13 @@ export async function getTrackAsSong(playlistId: number, column: string = 'playl
  * 
  * @param id 
  * @param column By default it will delete based on ID column, 
- *  else you can specify to delte by playlist_id or song_id
+ *  else you can specify to delete by playlist_id or song_id
  */
-export async function deleteTrack(
-  id: number,
-  column: 'id' | 'playlist_id' | 'song_id' = 'id'
-) {
+export async function deleteTrack(songId: number, playlistId: number) {
   const db = await getDB();
   await db.runAsync(
-    `DELETE FROM PLAYLIST_SONGS WHERE ${column} = ?`,
-    [id]
+    `DELETE FROM TRACKS WHERE song_id = ? AND playlist_id = ?`,
+    [songId, playlistId]
   );
 }
 
@@ -287,7 +284,7 @@ export async function updateSong(id: number, column: 'title' | 'file' | 'image',
 export async function clearDatabase() {
     const db = await getDB();
     await db.execAsync(`
-        DROP TABLE IF EXISTS PLAYLIST_SONGS;
+        DROP TABLE IF EXISTS TRACKS;
         DROP TABLE IF EXISTS PLAYLISTS;
         DROP TABLE IF EXISTS SONGS;
     `);
@@ -296,7 +293,7 @@ export async function clearDatabase() {
 export async function clearTrack() {
     const db = await getDB();
     await db.execAsync(`
-        DROP TABLE IF EXISTS PLAYLIST_SONGS;
+        DROP TABLE IF EXISTS TRACKS;
     `);
 }
 
