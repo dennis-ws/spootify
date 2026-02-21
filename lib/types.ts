@@ -52,7 +52,9 @@ export interface PlaylistCardProps {
 export type AudioContextValue = {
     audioPlayer: AudioPlayer;
     queue: Song[];
-    playPlaylist: (songs: Track[]) => void;
+    playPlaylist: (songs: Song[]) => void;
+    loopPlaylist: () => void;
+    loop: boolean
     playNext: () => void;
     playSong: (song: Song) => void;
 }

@@ -9,12 +9,14 @@ import { Image } from '@/components/ui/image'
 interface HeaderProp {
     image?: string
     playTrack?: () => void
+    loopPlaylist?: () => void
+    isLooping?: boolean
     heading: string
     rightPress: () => void
     leftPress: () => void
 }
 
-export function Header({image, playTrack, heading, leftPress, rightPress}: HeaderProp) {
+export function Header({image, playTrack, loopPlaylist, isLooping, heading, leftPress, rightPress}: HeaderProp) {
     
     return (
     <View style={styles.header}>
@@ -40,6 +42,8 @@ export function Header({image, playTrack, heading, leftPress, rightPress}: Heade
         <View style={styles.headerButtons}>
             {/* Play Tracks if it exists*/}
             {playTrack && <Button variant = 'secondary' onPress={playTrack}>Play</Button>}
+
+            {loopPlaylist && <Button variant = 'secondary' style={{backgroundColor: isLooping ? '#22c55e' : undefined}}onPress={loopPlaylist}>Loop</Button>}
 
             <View style={{ flex: 1}}/>
 
@@ -72,5 +76,5 @@ const styles = StyleSheet.create({
   imageBox: {
     alignItems: 'center',
     justifyContent: 'center'
-  }
+  },
 })

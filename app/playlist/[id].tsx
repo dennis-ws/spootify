@@ -27,7 +27,7 @@ const menuItems = [
 ]
 
 export default function track() {
-    const { playPlaylist, playSong} = useAudioContext();
+    const { playPlaylist, playSong, loopPlaylist, loop} = useAudioContext();
     const { id } = useLocalSearchParams();
     const idNumber = Number(id);
     const navigation = useNavigation();
@@ -215,6 +215,8 @@ export default function track() {
                 <Header
                     image={handleImage()}
                     playTrack={handlePlay}
+                    loopPlaylist={loopPlaylist}
+                    isLooping={loop}
                     heading={`${playlist?.name}`}
                     leftPress={() => {}}
                     rightPress={open}

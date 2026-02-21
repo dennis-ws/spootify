@@ -10,26 +10,42 @@ export function AudioProvider({children}: {children: React.ReactNode}) {
 
     const [queue, setQueue] = useState<Song[]>([]);
     const [nowPlaying, setNowPlaying] = useState<Song | null>(null);
+    const [index, setIndex] = useState<number>(0);
+
+    const [loop, setLoop] = useState<boolean>(false);
 
     useEffect(() => {
         setAudioMode();
     }, [])
 
     useEffect(() => {
+        // force the audio player to play, there's a bug where if you play all again at the end
+        // of a song's duration, the audio player stop playing after the first song
         audioPlayer.play();
         if (!audioStatus.didJustFinish) return;
 
         // we just finished a song, play next
-        if (queue.length > 0) {
+        if (index < queue.length - 1) {
             console.log("Finish Playing! \nCurrent Queue: ", queue);
             playNext();
+        } else if (loop) {
+            console.log("Looping!");
+            setIndex(0);
+            playSong(queue[0]);
         } else {
             cleanUp();
         }
         
         
 
-    }, [audioStatus.didJustFinish])
+    }, [audioStatus.didJustFinish, loop])
+
+    const loopPlaylist = () => {
+        setLoop(prev => {
+            console.log("Loop button pressed! Loop:", !prev);
+            return !prev;
+        })
+    }
 
     const playSong = (song: Song) => {
         console.log("Playing song: ", song.title, "\nFile: ", song.file);
@@ -42,20 +58,17 @@ export function AudioProvider({children}: {children: React.ReactNode}) {
         console.log("Attempting to play: ", songs);
         
         if (!songs.length) return;
-        const [song, ...rest] = songs;
-        setQueue(rest);
-        playSong(song);
+        setQueue(songs);
+        setIndex(0);
+        playSong(songs[0]);
     }
 
     const playNext = () => {
-        setQueue((prev) => {
-            const [song, ...rest] = prev;
-            if (song) {
-                playSong(song);
-            }
-
-            return rest;
-        })
+        setIndex(prev => {
+            const next = prev + 1;
+            playSong(queue[next]);
+            return next;
+        });
     }
 
     const pausePlayer = () => {
@@ -66,10 +79,11 @@ export function AudioProvider({children}: {children: React.ReactNode}) {
         console.log("Cleaning up!");
         setNowPlaying(null);
         setQueue([]);
+        setIndex(0);
     }
 
     return (
-        <AudioContext.Provider value={{audioPlayer, queue, playPlaylist, playNext, playSong}}>
+        <AudioContext.Provider value={{audioPlayer, queue, playPlaylist, playNext, playSong, loopPlaylist, loop}}>
             {children}
         </AudioContext.Provider>
     );
