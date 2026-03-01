@@ -6,10 +6,6 @@ import { useState } from 'react'
 import { Text } from '@/components/ui/text'
 import { Image } from '@/components/ui/image'
 import { SearchBar } from '@/components/ui/searchbar'
-import { getPlaylists, getSongTable, getTrackTable } from '@/lib/schema';
-import { Playlist, Song, Track } from '@/lib/types';
-import { useEffect } from 'react'
-
 
 interface HeaderProp {
     image?: string
@@ -25,8 +21,6 @@ interface HeaderProp {
 export function Header({image, playTrack, loopPlaylist, onSearch, isLooping, heading, leftPress, rightPress}: HeaderProp) {
     const [searchMode, setSearchMode] = useState(false);
     const [query, setQuery] = useState<string>('');
-
-    
 
     const handleSearch = () => {
         if (onSearch) {
@@ -58,7 +52,10 @@ export function Header({image, playTrack, loopPlaylist, onSearch, isLooping, hea
                 <View style={styles.searchBarContainer}>
                 <SearchBar 
                     placeholder='Search for anything'
-                    onChangeText={setQuery}
+                    onChangeText={(text) => {
+                        setQuery(text);
+                        onSearch?.(text);
+                    }}
                     value={query}
                     onSearch={handleSearch}
                     showClearButton={true}
