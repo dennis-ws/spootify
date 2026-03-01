@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput } from 'react-native'
+import { StyleSheet } from 'react-native'
 import { View } from '@/components/ui/view'
 import { Button } from '@/components/ui/button'
 import { Search, Ellipsis, Play, Repeat } from 'lucide-react-native';
@@ -6,29 +6,39 @@ import { useState } from 'react'
 import { Text } from '@/components/ui/text'
 import { Image } from '@/components/ui/image'
 import { SearchBar } from '@/components/ui/searchbar'
+import { getPlaylists, getSongTable, getTrackTable } from '@/lib/schema';
+import { Playlist, Song, Track } from '@/lib/types';
+import { useEffect } from 'react'
+
 
 interface HeaderProp {
     image?: string
     playTrack?: () => void
     loopPlaylist?: () => void
+    onSearch?: (query: string) => void
     isLooping?: boolean
     heading: string
     rightPress: () => void
     leftPress: () => void
 }
 
-export function Header({image, playTrack, loopPlaylist, isLooping, heading, leftPress, rightPress}: HeaderProp) {
+export function Header({image, playTrack, loopPlaylist, onSearch, isLooping, heading, leftPress, rightPress}: HeaderProp) {
     const [searchMode, setSearchMode] = useState(false);
     const [query, setQuery] = useState<string>('');
+
     
+
     const handleSearch = () => {
-        console.log("Searched for: ", query);
-    }
+        if (onSearch) {
+            onSearch(query.trim());
+        }
+    };
 
     const handleCancel = () => {
         setSearchMode(false);
         setQuery('');
-    }
+        onSearch?.('');
+    };
 
     return (
     <View style={styles.header}>

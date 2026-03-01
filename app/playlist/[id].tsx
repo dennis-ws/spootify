@@ -39,11 +39,25 @@ export default function track() {
     const textColor = useColor('text');
 
     const [playlist, setPlaylist] = useState<Playlist>();
-    const [Track, setTrack] = useState<Track[]>();
+    const [track, setTrack] = useState<Track[]>();
+    const [filteredTrack, setFilteredTrack] = useState<Track[]>();
     const [psong, setPsongs] = useState<Song[]>([]);
     const [psongId, setPsongId] = useState<Set<number>>(new Set());
     const [songs, setSongs] = useState<Song[]>([]);
     const selected = useColor('green');
+
+    const handleTrackSearch = (query: string) => {
+        if (!query) {
+            setFilteredTrack(track);
+            return;
+        }
+
+        setFilteredTrack(
+            track?.filter((song) =>
+                song.title.toLowerCase().includes(query.toLowerCase())
+            )
+        );
+    };
 
     const reload = async () => {
         await loadTrack();
@@ -53,6 +67,7 @@ export default function track() {
     const loadTrack = async () => {
         const table = await getSongsFromPid(idNumber);
         setTrack(table);
+        setFilteredTrack(table);
         const ptable = await getTrackAsSong(idNumber);
         setPsongs(ptable);
         setPsongId(new Set(ptable.map((song) => song.id)))
@@ -207,16 +222,13 @@ export default function track() {
         playPlaylist(psong);
     }
 
-    const searchSong = async (song: string) => {
-        console.log(psong);
-    }
-
     return (
         <>
         <NestableScrollContainer>
             <View>
                 {/* Header */}
                 <Header
+                    onSearch={handleTrackSearch}
                     image={handleImage()}
                     playTrack={handlePlay}
                     loopPlaylist={loopPlaylist}
@@ -258,7 +270,7 @@ export default function track() {
             <View>
                 {/* Songs */}
                 <View style={styles.songBox}>
-                    {Track?.map((psong) => {
+                    {filteredTrack?.map((psong) => {
                         const isSelected = selectedIds.has(psong.id);
                         return (
                             <SongCard

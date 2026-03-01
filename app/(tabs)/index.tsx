@@ -23,6 +23,7 @@ import { Sheetmode } from '@/lib/types';
 import { Directory, File, Paths} from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { Alert } from 'react-native';
+import { Playlist } from '@/lib/types'
 
 const menuItems = [
   {id: 'add', title: 'Add playlist'},
@@ -57,7 +58,8 @@ export default function HomeScreen() {
 
 
   const router = useRouter();
-  const [playlists, setPlaylists] = useState<any[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [filteredPlaylists, setFilteredPlaylists] = useState<Playlist[]>([]);
 
   const bottom = useBottomTabBarHeight();
   useEffect(() => {
@@ -68,6 +70,17 @@ export default function HomeScreen() {
     }
     init();
   }, []);
+
+  const handlePlaylistSearch = (query: string) => {
+    if (!query) {
+      setFilteredPlaylists(playlists);
+      return;
+    }
+
+    setFilteredPlaylists(playlists.filter((playlist) => 
+      playlist.name.toLowerCase().includes(query.toLowerCase())
+    ));
+  };
 
   const pickImage = async () => {
       if (!editPlaylistId) return;
@@ -275,6 +288,7 @@ export default function HomeScreen() {
     >
       {/* Header */}
       <Header
+        onSearch={handlePlaylistSearch}
         heading="Playlists"
         leftPress={() => {}}
         rightPress={open}
@@ -304,7 +318,7 @@ export default function HomeScreen() {
 
       {/* Playlist Section */}
       <View style={styles.playlistSection}>
-        {playlists.map((playlist) => {
+        {filteredPlaylists.map((playlist) => {
           const isSelected = selectedIds.has(playlist.id)
             return (
               <PlaylistCard

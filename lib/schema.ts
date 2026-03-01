@@ -237,19 +237,20 @@ export async function deleteSong(id: number) {
     await db.runAsync(`DELETE FROM SONGS WHERE id = ${id}`);
 }
 
-export async function getSong(id: number): Promise<Song> {
+export async function getSong(toSearch: string | number, column: 'id' | 'file' | 'image' | 'title' = 'id'): Promise<Song> {
     const db = await getDB();
     const results = await db.getAllAsync<Song>(`
-        SELECT 
+        SELECT
+            id,
             file,
             image,
             title
         FROM SONGS 
-        WHERE id = ${id}`);
-
-    if (results.length === 0) {
-        throw new Error(`Song with ID ${id} not found.`);
-    }
+        WHERE ${column} = ?`,
+        [
+            toSearch
+        ]
+    );
     return results[0]; // this should only return the file because it comes in an array lmao
 }
 

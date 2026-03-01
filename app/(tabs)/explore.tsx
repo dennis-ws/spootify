@@ -42,6 +42,7 @@ export default function ExploreScreen() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [songs, setSongs] = useState<Song[]>([]);
+  const [filteredSongs, setFilteredSongs] = useState<Song[]>([]);
   const [editMode, setEditMode] = useState<Sheetmode>('menu');
   const [editSongId, setEditSongId] = useState<number | null>(null);
   const [songName, setSongName] = useState<string>('');
@@ -58,6 +59,7 @@ export default function ExploreScreen() {
     await createSongTable();
     const songTable = await getSongTable();
     setSongs(songTable);
+    setFilteredSongs(songTable);
   }
 
   useEffect(() => {
@@ -67,6 +69,20 @@ export default function ExploreScreen() {
     }
     init();
   }, []);
+
+  const handleSongSearch = (query: string) => {
+    if (!query) {
+      setFilteredSongs(songs);
+      return;
+    }
+
+    const lower = query.toLowerCase();
+    const results = songs.filter((song) => 
+      song.title.toLowerCase().includes(lower)
+    );
+
+    setFilteredSongs(results);
+  }
 
   const pickMp3 = async () => {
     try {
@@ -313,6 +329,7 @@ export default function ExploreScreen() {
     >
       {/* Header */}
       <Header
+        onSearch={handleSongSearch}
         heading="Songs"
         leftPress={() => {}}
         rightPress={openMenu}
@@ -342,7 +359,7 @@ export default function ExploreScreen() {
 
       {/* Playlist Section */}
       <View style={styles.playlistSection}>
-        {songs.map((song) => {
+        {filteredSongs.map((song) => {
           const isSelected = selectedIds.has(song.id);
 
           return (
