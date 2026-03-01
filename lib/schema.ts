@@ -189,10 +189,10 @@ export async function getTrackAsSong(playlistId: number, column: string = 'playl
 }
 
 /**
+ * Delete the track based on it song id and playlist id
  * 
  * @param id 
- * @param column By default it will delete based on ID column, 
- *  else you can specify to delete by playlist_id or song_id
+ * @param column 
  */
 export async function deleteTrack(songId: number, playlistId: number) {
   const db = await getDB();
@@ -202,6 +202,16 @@ export async function deleteTrack(songId: number, playlistId: number) {
   );
 }
 
+export async function deleteTrackById(id: number, column: 'song_id' | 'playlist_id') {
+    const db = await getDB();
+    await db.runAsync(`
+        DELETE FROM TRACKS
+        WHERE ${column} = ?`,
+        [
+            id
+        ]
+    )
+}
 
 export async function createSongTable() {
     const db = await getDB();

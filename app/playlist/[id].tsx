@@ -207,6 +207,10 @@ export default function track() {
         playPlaylist(psong);
     }
 
+    const searchSong = async (song: string) => {
+        console.log(psong);
+    }
+
     return (
         <>
         <NestableScrollContainer>

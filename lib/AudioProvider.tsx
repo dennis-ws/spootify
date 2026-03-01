@@ -75,6 +75,23 @@ export function AudioProvider({children}: {children: React.ReactNode}) {
         audioPlayer.pause();
     }
 
+    const playPlayer = () => {
+        audioPlayer.play();
+    }
+
+    const skipSong = () => {
+        const songDuration = audioStatus.duration;
+        audioPlayer.seekTo(songDuration)
+    }
+
+    const playPrevious = () => {
+        setIndex(cur => {
+            const prev = cur - 1;
+            playSong(queue[prev]);
+            return prev;
+        })
+    }
+
     const cleanUp = () => {
         console.log("Cleaning up!");
         setNowPlaying(null);

@@ -1,10 +1,11 @@
-import { StyleSheet } from 'react-native'
+import { StyleSheet, TextInput } from 'react-native'
 import { View } from '@/components/ui/view'
 import { Button } from '@/components/ui/button'
-import { Search, Ellipsis } from 'lucide-react-native';
-import { ModeToggle } from '@/components/ui/mode-toggle'
+import { Search, Ellipsis, Play, Repeat } from 'lucide-react-native';
+import { useState } from 'react'
 import { Text } from '@/components/ui/text'
 import { Image } from '@/components/ui/image'
+import { SearchBar } from '@/components/ui/searchbar'
 
 interface HeaderProp {
     image?: string
@@ -17,13 +18,45 @@ interface HeaderProp {
 }
 
 export function Header({image, playTrack, loopPlaylist, isLooping, heading, leftPress, rightPress}: HeaderProp) {
+    const [searchMode, setSearchMode] = useState(false);
+    const [query, setQuery] = useState<string>('');
     
+    const handleSearch = () => {
+        console.log("Searched for: ", query);
+    }
+
+    const handleCancel = () => {
+        setSearchMode(false);
+        setQuery('');
+    }
+
     return (
     <View style={styles.header}>
-        <View style={styles.headerContent}>
-            <Text variant='heading'>{`${heading}`}</Text>
+        <View>
+            {!searchMode && 
+            <View style={styles.headerContent}>
+                <Text variant="heading">{heading}</Text>
 
-            <ModeToggle />
+                <Button
+                    icon={Search}
+                    variant="secondary"
+                    onPress={() => setSearchMode(true)}
+                />
+            </View>}
+            {searchMode && 
+            <View style={styles.searchContainer}>
+                <View style={styles.searchBarContainer}>
+                <SearchBar 
+                    placeholder='Search for anything'
+                    onChangeText={setQuery}
+                    value={query}
+                    onSearch={handleSearch}
+                    showClearButton={true}
+                />
+                </View>
+                <Button size='sm' variant='ghost' onPress={handleCancel}>Cancel</Button>
+            </View>
+            }
         </View>
 
         {/* Image */}
@@ -41,13 +74,11 @@ export function Header({image, playTrack, loopPlaylist, isLooping, heading, left
         {/* Search and Setting buttons */}
         <View style={styles.headerButtons}>
             {/* Play Tracks if it exists*/}
-            {playTrack && <Button variant = 'secondary' onPress={playTrack}>Play</Button>}
+            {playTrack && <Button icon = {Play} variant = 'secondary' onPress={playTrack}></Button>}
 
-            {loopPlaylist && <Button variant = 'secondary' style={{backgroundColor: isLooping ? '#22c55e' : undefined}}onPress={loopPlaylist}>Loop</Button>}
+            {loopPlaylist && <Button icon = {Repeat} variant = 'secondary' style={{backgroundColor: isLooping ? '#22c55e' : undefined}}onPress={loopPlaylist}></Button>}
 
             <View style={{ flex: 1}}/>
-
-            <Button icon={Search} variant='secondary' onPress={leftPress}></Button>
 
             <Button icon={Ellipsis} variant='secondary' onPress={rightPress}></Button>
         </View>
@@ -77,4 +108,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
+  searchContainer: {
+    flexDirection: 'row'
+  },
+  searchBarContainer: {
+    flex: 1
+  }
 })
