@@ -2,9 +2,9 @@ import { StyleSheet, TouchableOpacity } from 'react-native'
 import { useColor } from '@/hooks/useColor'
 import { View } from '@/components/ui/view'
 import { Text } from '@/components/ui/text'
-import { PlaylistSongCardProp } from '@/lib/types'
+import { TrackCardProp } from '@/lib/types'
 
-export function PlaylistSongCard({playlist, isSelected, onPress}: PlaylistSongCardProp) {
+export function trackCard({playlist, isSelected, onPress}: TrackCardProp) {
     const destructiveColor = useColor('destructive')
 
     return (
