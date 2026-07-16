@@ -146,7 +146,7 @@ export default function HomeScreen() {
   async function loadPlaylists() {
     const playlists = await getPlaylists();
     setPlaylists(playlists);
-    console.log(playlists);
+    console.log('Loaded playlists: ', playlists);
   }
 
   const snapPointHeight = () => {

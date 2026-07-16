@@ -89,6 +89,7 @@ export default function track() {
             await loadPlaylist();
             await loadTrack();
             await loadSongs();
+            await loadPlaylist();
         }
 
         init();
@@ -97,7 +98,7 @@ export default function track() {
     /** Set Header */
     useLayoutEffect(() => {
         navigation.setOptions({
-            title: `Playlist ${id}`,
+            title: `Playlist ${id}: ${playlist?.name}`,
             headerBackTitle: 'Back',
         });
     })
@@ -228,12 +229,7 @@ export default function track() {
             <View>
                 {/* Header */}
                 <Header
-                    onSearch={handleTrackSearch}
-                    image={handleImage()}
-                    playTrack={handlePlay}
-                    loopPlaylist={loopPlaylist}
-                    isLooping={loop}
-                    heading={`${playlist?.name}`}
+                    heading={`${idNumber}`}
                     leftPress={() => {}}
                     rightPress={open}
                 />
