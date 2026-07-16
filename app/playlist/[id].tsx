@@ -229,7 +229,7 @@ export default function track() {
             <View>
                 {/* Header */}
                 <Header
-                    heading={`${idNumber}`}
+                    heading={`${idNumber}: ${playlist?.name}`}
                     leftPress={() => {}}
                     rightPress={open}
                 />
