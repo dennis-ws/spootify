@@ -73,6 +73,7 @@ export default function track() {
             await createTrackTable();
             await loadTrack();
             await loadSongs();
+            await loadPlaylist();
         }
 
         init();
@@ -81,7 +82,7 @@ export default function track() {
     /** Set Header */
     useLayoutEffect(() => {
         navigation.setOptions({
-            title: `Playlist ${id}`,
+            title: `Playlist ${id}: ${playlist?.name}`,
             headerBackTitle: 'Back',
         });
     })
@@ -201,7 +202,7 @@ export default function track() {
             <View>
                 {/* Header and Play Playlist*/}
                 <Header
-                    heading={`${idNumber}`}
+                    heading={`${idNumber}: ${playlist?.name}`}
                     leftPress={() => {}}
                     rightPress={open}
                 />

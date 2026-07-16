@@ -6,7 +6,7 @@ export async function createPlaylistTable() {
 
     await db.execAsync(`
         CREATE TABLE IF NOT EXISTS PLAYLISTS (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
             description TEXT,
             image TEXT
@@ -75,7 +75,7 @@ export async function createTrackTable() {
 
     await db.execAsync(`
         CREATE TABLE IF NOT EXISTS PLAYLIST_SONGS (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY,
             playlist_id INTEGER,
             song_id INTEGER,
             position INTEGER,
@@ -211,7 +211,7 @@ export async function createSongTable() {
 
     await db.execAsync(`
         CREATE TABLE IF NOT EXISTS SONGS (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY,
             title TEXT NOT NULL,
             file TEXT,
             image TEXT
@@ -312,4 +312,18 @@ export async function clearSongs() {
     await db.execAsync(`
         DROP TABLE IF EXISTS SONGS;
     `);
+}
+
+
+/**
+ * This function retrieves all playlists, tracks, and songs from the database.
+ * It returns an object containing three arrays: playlists, tracks, and songs.
+ * This is mainly for testing purposes.
+ */
+export async function getAll() {
+    const db = await getDB();
+    const playlists = await db.getAllAsync<Playlist>(`SELECT * FROM PLAYLISTS`);
+    const tracks = await db.getAllAsync<Track>(`SELECT * FROM PLAYLIST_SONGS`);
+    const songs = await db.getAllAsync<Song>(`SELECT * FROM SONGS`);
+    return { playlists, tracks, songs };
 }
