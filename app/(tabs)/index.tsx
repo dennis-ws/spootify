@@ -146,6 +146,7 @@ export default function HomeScreen() {
   async function loadPlaylists() {
     const playlists = await getPlaylists();
     setPlaylists(playlists);
+    setFilteredPlaylists(playlists); // initially set filtered playlists to all playlists
     console.log('Loaded playlists: ', playlists);
   }
 
