@@ -90,6 +90,7 @@ export default function track() {
             await loadTrack();
             await loadSongs();
             await loadPlaylist();
+            console.log("Hello from playlist page, id: ", idNumber);
         }
 
         init();
@@ -230,6 +231,7 @@ export default function track() {
                 {/* Header */}
                 <Header
                     heading={`${idNumber}: ${playlist?.name}`}
+                    onSearch={handleTrackSearch}
                     leftPress={() => {}}
                     rightPress={open}
                 />
