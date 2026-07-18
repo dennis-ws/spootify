@@ -55,6 +55,7 @@ export function Header({image, playTrack, loopPlaylist, onSearch, isLooping, hea
                     onChangeText={(text) => {
                         setQuery(text);
                         onSearch?.(text);
+                        console.log("Searching for:", text);
                     }}
                     value={query}
                     onSearch={handleSearch}
