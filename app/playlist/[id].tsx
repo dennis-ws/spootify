@@ -234,6 +234,9 @@ export default function track() {
                     onSearch={handleTrackSearch}
                     leftPress={() => {}}
                     rightPress={open}
+                    playTrack={handlePlay}
+                    loopPlaylist={loopPlaylist}
+                    isLooping={loop}
                 />
             </View>
             

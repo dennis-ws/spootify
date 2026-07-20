@@ -47,6 +47,7 @@ export function Header({image, playTrack, loopPlaylist, onSearch, isLooping, hea
                     onPress={() => setSearchMode(true)}
                 />
             </View>}
+
             {searchMode && 
             <View style={styles.searchContainer}>
                 <View style={styles.searchBarContainer}>
@@ -55,7 +56,6 @@ export function Header({image, playTrack, loopPlaylist, onSearch, isLooping, hea
                     onChangeText={(text) => {
                         setQuery(text);
                         onSearch?.(text);
-                        console.log("Searching for:", text);
                     }}
                     value={query}
                     onSearch={handleSearch}
@@ -82,10 +82,21 @@ export function Header({image, playTrack, loopPlaylist, onSearch, isLooping, hea
         {/* Search and Setting buttons */}
         <View style={styles.headerButtons}>
             {/* Play Tracks if it exists*/}
-            {playTrack && <Button icon = {Play} variant = 'secondary' onPress={playTrack}></Button>}
+            {playTrack && 
+                <Button 
+                    icon = {Play} 
+                    variant = 'secondary' 
+                    onPress={playTrack}>
+                </Button>
+            }
 
-            {loopPlaylist && <Button icon = {Repeat} variant = 'secondary' style={{backgroundColor: isLooping ? '#22c55e' : undefined}}onPress={loopPlaylist}></Button>}
-
+            {loopPlaylist && 
+                <Button icon = {Repeat} 
+                    variant = 'secondary' 
+                    style={{backgroundColor: isLooping ? '#22c55e' : undefined}}
+                    onPress={loopPlaylist}>
+                </Button>
+            }
             <View style={{ flex: 1}}/>
 
             <Button icon={Ellipsis} variant='secondary' onPress={rightPress}></Button>
