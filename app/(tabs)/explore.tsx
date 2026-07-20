@@ -478,7 +478,6 @@ const styles = StyleSheet.create({
   playlistSection: { 
     flexDirection: 'column', 
     alignItems: 'center', 
-    backgroundColor: 'red', 
     gap: 10 
   },
 });
